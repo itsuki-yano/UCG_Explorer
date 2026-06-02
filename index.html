@@ -245,7 +245,6 @@
     </div>
 
     <script>
-        // JSONパース連動バグの修正
         function parseJsonInput() {
             const rawText = document.getElementById('json_input').value.trim();
             if(!rawText) {
@@ -255,7 +254,6 @@
             try {
                 const data = JSON.parse(rawText);
                 
-                // スライダー（input要素）のvalueに直接数値を叩き込むよう修正
                 if (data.simpsonEF !== undefined) document.getElementById('lvef').value = Math.round(data.simpsonEF * 100);
                 else if (data.EF !== undefined) document.getElementById('lvef').value = Math.round(data.EF * 100);
                 
@@ -265,6 +263,9 @@
                 if (data["AVA連続式"] !== undefined) document.getElementById('ava').value = data["AVA連続式"];
                 if (data["AV meanPG"] !== undefined) document.getElementById('mpg').value = data["AV meanPG"];
                 
+                // [修正箇所] MVA連続式のパース・マッピング処理を追加
+                if (data["MVA連続式"] !== undefined) document.getElementById('mva').value = data["MVA連続式"];
+                
                 if (data["IVC呼気"] !== undefined) {
                     document.getElementById('ivc_diam').value = data["IVC呼気"];
                     if (data["IVC吸気"] !== undefined && data["IVC呼気"] > 0) {
@@ -273,7 +274,6 @@
                     }
                 }
                 
-                // パース後に全体の再計算をキック
                 calculateReasoning();
                 alert("JSONデータをパースし、スライダーに反映しました！");
             } catch(e) {
