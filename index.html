@@ -18,14 +18,12 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif; }
         body { background-color: var(--bg-body); color: var(--text-main); padding: 8px; -webkit-text-size-adjust: 100%; }
         
-        /* ヘッダーのスリム化 */
         header { background-color: var(--primary); color: white; padding: 8px; border-radius: 6px; margin-bottom: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         header h1 { font-size: 1.1rem; line-height: 1.2; }
         header p { font-size: 0.75rem; color: #cbd5e0; }
         
         .container { display: flex; flex-wrap: wrap; gap: 8px; max-width: 1500px; margin: 0 auto; }
         
-        /* 各パネルのパディングを詰め、スクロール量を抑える */
         .left-panel { 
             flex: 1 1 100%; 
             background: var(--bg-panel); 
@@ -42,20 +40,16 @@
         .right-panel { flex: 2 1 100%; display: flex; flex-direction: column; gap: 8px; }
         .result-box { background: var(--bg-panel); padding: 12px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         
-        /* 見出し周りのピッチを縮小 */
         h2 { font-size: 0.95rem; color: var(--primary); margin-bottom: 8px; border-bottom: 2px solid var(--border); padding-bottom: 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 5px;}
         h3 { font-size: 0.85rem; color: #4a5568; margin-bottom: 6px; margin-top: 10px; padding-left: 6px; border-left: 3px solid var(--secondary); background: #f7fafc; padding-top: 2px; padding-bottom: 2px; border-radius: 0 4px 4px 0;}
         h3:first-child { margin-top: 0; }
         
-        /* 入力項目の高さを抑制 */
         .input-group { margin-bottom: 8px; }
         .input-group label { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 2px; color: #4a5568; font-size: 0.8rem; align-items: center;}
         .val-display { color: var(--secondary); font-size: 1.05em; background: #edf2f7; padding: 1px 6px; border-radius: 4px;}
         
-        /* JSONエリアをコンパクトに */
         .json-area { width: 100%; height: 60px; font-family: monospace; font-size: 0.75rem; padding: 6px; border: 1px solid var(--border); border-radius: 4px; resize: vertical; margin-bottom: 6px; background: #fcfcfc; }
 
-        /* スライダーを少しタイトに */
         input[type="range"] { 
             -webkit-appearance: none;
             appearance: none;
@@ -81,7 +75,6 @@
         .status-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-weight: bold; color: white; font-size: 0.75rem; margin-bottom: 4px; }
         .bg-normal { background-color: #48bb78; } .bg-warning { background-color: #ed8936; } .bg-danger { background-color: #e53e3e; } .bg-info { background-color: #4299e1; }
         
-        /* 判定アイテム間の隙間を削減 */
         .judgement-item { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border); }
         .judgement-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .judgement-item > div:first-child { font-weight: bold; margin-bottom: 2px; font-size: 0.85rem;}
@@ -92,11 +85,9 @@
         .note-content { font-size: 0.8rem; color: #7b341e; margin-bottom: 0; line-height: 1.4; }
         .alert-box { background-color: #fff5f5; border-left: 3px solid #e53e3e; padding: 6px; font-size: 0.8rem; color: #c53030; margin-top: 6px; border-radius: 4px;}
         
-        /* メーターの余白をタイトに */
         .lap-meter { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; background: #ebf8ff; padding: 8px; border-radius: 4px; border: 1px solid #bee3f8;}
         .lap-val { font-size: 1.25rem; font-weight: bold; color: #2b6cb0; text-align: right;}
         
-        /* ボタンのパディング調整 */
         .btn { padding: 6px 12px; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: background 0.2s; -webkit-tap-highlight-color: transparent;}
         .btn-primary { background-color: var(--secondary); width: 100%; margin-top: 6px; display: block;}
         .btn-primary:active { background-color: #1a365d; }
@@ -254,6 +245,7 @@
     </div>
 
     <script>
+        // JSONパース連動バグの修正
         function parseJsonInput() {
             const rawText = document.getElementById('json_input').value.trim();
             if(!rawText) {
@@ -263,6 +255,7 @@
             try {
                 const data = JSON.parse(rawText);
                 
+                // スライダー（input要素）のvalueに直接数値を叩き込むよう修正
                 if (data.simpsonEF !== undefined) document.getElementById('lvef').value = Math.round(data.simpsonEF * 100);
                 else if (data.EF !== undefined) document.getElementById('lvef').value = Math.round(data.EF * 100);
                 
@@ -280,6 +273,7 @@
                     }
                 }
                 
+                // パース後に全体の再計算をキック
                 calculateReasoning();
                 alert("JSONデータをパースし、スライダーに反映しました！");
             } catch(e) {
@@ -465,7 +459,6 @@
             document.getElementById('edu_logic').innerHTML = "<ul><li style='margin-bottom:4px;'>" + eduNotes.join("</li><li style='margin-bottom:4px;'>") + "</li></ul>";
         }
 
-        // 起動時・リセット時は完全正常中央値
         function resetToNormalData() {
             document.getElementById('lvef').value = 60;
             document.getElementById('ea').value = 1.20;
@@ -515,7 +508,6 @@
             document.body.removeChild(textArea);
         }
         
-        // 初回ロードは正常中央値で開始
         resetToNormalData();
     </script>
 </body>
