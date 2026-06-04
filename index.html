@@ -22,7 +22,6 @@
         header h1 { font-size: 1rem; line-height: 1.2; }
         header p { font-size: 0.7rem; color: #cbd5e0; }
         
-        /* 縦並びを基本（モバイル優先）とする構造に変更 */
         .container { display: flex; flex-direction: column; gap: 6px; max-width: 100%; margin: 0 auto; }
         
         .left-panel, .right-panel { width: 100%; display: flex; flex-direction: column; gap: 6px; }
@@ -41,7 +40,6 @@
         
         .json-area { width: 100%; height: 50px; font-family: monospace; font-size: 0.7rem; padding: 4px; border: 1px solid var(--border); border-radius: 4px; resize: vertical; background: #fcfcfc; }
 
-        /* iPhoneの指操作に最適化しつつ高さを抑えたスライダー */
         input[type="range"] { 
             -webkit-appearance: none; appearance: none; width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; outline: none; margin-top: 2px; margin-bottom: 2px; 
         }
@@ -71,7 +69,6 @@
 
         .tooltip-box { display: none; background: #2d3748; color: #fff; padding: 6px; border-radius: 4px; position: fixed; z-index: 100; max-width: 240px; font-size: 0.7rem; box-shadow: 0 2px 4px rgba(0,0,0,0.15); line-height: 1.3; }
 
-        /* PC等、大画面ディスプレイ用の2カラム切り替え指定 */
         @media (min-width: 768px) {
             body { padding: 8px; }
             header { padding: 8px; margin-bottom: 8px; }
@@ -191,7 +188,7 @@
                 <div class="lap-meter" style="background: #f8fafc; border-color: #cbd5e0;">
                     <div>
                         <div style="font-size: 0.75rem; font-weight: bold; color: #4a5568;">【参考値】推定 平均肺動脈楔入圧 (PCWP)</div>
-                        <div style="font-size: 0.6rem; color: #718096;">1.24 × (E/e') + 1.9 (※評価ロジック非連動)</div>
+                        <div style="font-size: 0.6rem; color: #718096;">1.24 × (E/e') + 1.9 (※弁膜症がない場合の目安)</div>
                     </div>
                     <div>
                         <span class="lap-val" id="lap_pcwp" style="color: #4a5568; font-size: 1.1rem;">11.8</span> <span style="font-size:0.7rem; color:#4a5568;">mmHg</span>
@@ -201,7 +198,7 @@
                 <div class="lap-meter" style="background: #f0fff4; border: 1px solid #c6f6d5; margin-top: 4px;">
                     <div>
                         <div style="font-size: 0.75rem; font-weight: bold; color: #22543d;">推定 右房圧 (RAP)</div>
-                        <div style="font-size: 0.6rem; color: #4a5568;">IVC径・虚脱率併合算定</div>
+                        <div style="font-size: 0.6rem; color: #4a5568;">ASE 2015 下大静脈基準に基づく3段階評価</div>
                     </div>
                     <div>
                         <span class="lap-val" id="rap_calc" style="color: #22543d; font-size: 1.1rem;">3</span> <span style="font-size:0.7rem; color:#22543d;">mmHg</span>
@@ -210,19 +207,19 @@
                 </div>
 
                 <div id="ms_lap_alert" class="alert-box" style="display:none;">
-                    🚨 注意: 僧帽弁狭窄（MS）のためE/e'による圧推定は適用外（参考値扱い）となります。
+                    🚨 注意: 僧帽弁狭窄（MS）等の機能性交絡が存在するため、E/e'による左房充満圧推定は評価対象外（適用不可）となります。
                 </div>
 
                 <hr style="border:0; border-top:1px solid var(--border); margin: 6px 0;">
 
                 <div class="judgement-item">
-                    <div>左室拡張機能分類:</div>
+                    <div>左室充満圧パターンおよび拡張機能分類:</div>
                     <span id="dd_badge" class="status-badge bg-normal">正常</span>
                     <div id="dd_logic" style="width:100%; font-size:0.75rem; color:#4a5568;"></div>
                 </div>
 
                 <div class="judgement-item">
-                    <div>心不全フェノタイプ分類:</div>
+                    <div>左室収縮能・心機能パターン評価:</div>
                     <span id="hf_badge" class="status-badge bg-normal">正常心機能</span>
                 </div>
 
@@ -261,9 +258,12 @@
             e_prime: "【中隔側 e'】中隔側 e' ≦ 6.0 cm/s をもって『心筋弛緩能低下（Impaired Relaxation）』の存在を定義します。",
             dct: "【MV DecT】E波減速時間。160ms未満への短縮は拘束型（Grade 3）を示唆。",
             lavi: "【LAVI】左房容積指数。34 mL/m² 超を構造的リモデリングの指標とします。",
-            las: "【左房リザーバ strain (LARS)】改訂の最重要追加項目。LARS ≦ 18% を拡張機能障害の指標として採用。",
-            trv: "【TR Vmax】三尖弁逆流速度。2025年版基準では、LAP推定や包括的HFpEF重症度評価のステップに統合されました。"
+            las: "【左房リザーバ strain (LARS)】心不全・拡張能評価の重要追加項目。LARS ≦ 18% を拡張機能障害の指標として評価。",
+            trv: "【TR Vmax】三尖弁逆流速度。2.8 m/s超は肺高血圧・左室充満圧上昇を示唆する包括指標です。"
         };
+
+        // UI用バックアップ変数（Af切り替え時の数値保護）
+        let savedAWaveValue = 0.67;
 
         function showDesc(key, event) {
             event.stopPropagation();
@@ -284,11 +284,12 @@
             const isAf = document.getElementById('is_af').checked;
             const aInput = document.getElementById('a_wave');
             if(isAf) {
+                savedAWaveValue = parseFloat(aInput.value) || 0.67;
                 aInput.value = 0;
                 aInput.disabled = true;
             } else {
                 aInput.disabled = false;
-                aInput.value = 0.67;
+                aInput.value = savedAWaveValue > 0 ? savedAWaveValue : 0.67;
             }
             calculateReasoning();
         }
@@ -359,15 +360,14 @@
             const ea = isAf ? 0 : (a_wave > 0 ? (e_wave / a_wave) : 1.0);
             const ee = septal_e > 0 ? ((e_wave * 100) / septal_e) : 5.3;
 
+            // UIのリアルタイム同期（JSONパース時およびスライダー操作時のズレ防止）
             document.getElementById('lvef_val').innerText = lvef;
             document.getElementById('e_wave_val').innerText = e_wave.toFixed(2);
             document.getElementById('a_wave_val').innerText = isAf ? "計測不可" : a_wave.toFixed(2);
             document.getElementById('e_prime_val').innerText = septal_e.toFixed(1);
             document.getElementById('dct_val').innerText = dct;
-            
             document.getElementById('ea_val').innerText = isAf ? "計測不可" : ea.toFixed(2);
             document.getElementById('ee_val').innerText = ee.toFixed(1);
-            
             document.getElementById('lavi_val').innerText = lavi.toFixed(1);
             document.getElementById('lars_val').innerText = lars;
             document.getElementById('ava_val').innerText = ava.toFixed(2);
@@ -379,55 +379,59 @@
 
             let finalTemplate = "";
             let eduNotes = [];
-            let useLatestAseEvidence = false;
-
             let ddBadgeText = "", ddBadgeClass = "", ddLogicText = "";
             let lapStatusText = "正常";
 
+            // 左室充満圧パターンおよび拡張機能分類（境界条件を等号で完全網羅）
             if (isAf) {
-                useLatestAseEvidence = true;
-                if (ee > 14 || dct < 160 || lavi > 34 || lars <= 18) {
+                if (ee >= 15 || dct < 160 || lavi > 34 || lars <= 18) {
                     if (dct < 160 || ee > 20) {
-                        ddBadgeText = "Grade 3 (拘束型)"; ddBadgeClass = "bg-danger";
-                        ddLogicText = "心房細動: DcT短縮(<160ms) / 左房圧は著明に上昇。";
+                        ddBadgeText = "Grade 3 (拘束型充満)"; ddBadgeClass = "bg-danger";
+                        ddLogicText = "心房細動下: DcT高度短縮(<160ms)または高度E/e'上昇。左房圧は著明上昇。";
                         lapStatusText = "著明に上昇";
                     } else {
-                        ddBadgeText = "Grade 2 (偽正常化)"; ddBadgeClass = "bg-warning";
-                        ddLogicText = "心房細動: E/e'高値またはLARS低下 / 左房圧は上昇。";
+                        ddBadgeText = "Grade 2 (偽正常化型充満)"; ddBadgeClass = "bg-warning";
+                        ddLogicText = "心房細動下: E/e'≧15、LARS低下などの複数陽性。左房圧は上昇傾向。";
                         lapStatusText = "上昇";
                     }
                 } else {
                     ddBadgeText = "Grade 1 (弛緩能低下)"; ddBadgeClass = "bg-info";
-                    ddLogicText = "心房細動: 明白な圧負荷なし / 左房圧は正常。";
+                    ddLogicText = "心房細動下: 明らかな圧負荷指標なし。推定左房圧は正常範囲内。";
                     lapStatusText = "正常";
                 }
             } else {
                 if (ea >= 2.0 || dct < 160) {
-                    ddBadgeText = "Grade 3 (拘束型)"; ddBadgeClass = "bg-danger";
-                    ddLogicText = "E/A ≧ 2.0 または DcT短縮 (< 160 ms)。左房圧は著明に上昇。";
+                    ddBadgeText = "Grade 3 (拘束型充満)"; ddBadgeClass = "bg-danger";
+                    ddLogicText = "E/A ≧ 2.0 または DcT短縮 (<160ms)。左房圧は著明に上昇。";
                     lapStatusText = "著明に上昇";
                 } else if (ea <= 0.8 && dct > 200) {
                     ddBadgeText = "Grade 1 (弛緩能低下)"; ddBadgeClass = "bg-info";
-                    ddLogicText = "E/A ≦ 0.8 かつ DcT延長 (> 200 ms)。左房圧は正常。";
+                    ddLogicText = "E/A ≦ 0.8 かつ DcT延長 (>200ms)。左房圧は正常。";
                     lapStatusText = "正常";
-                } else if (ea > 0.8 && ea < 2.0 && dct >= 160 && dct <= 200) {
-                    ddBadgeText = "Grade 2 (偽正常化)"; ddBadgeClass = "bg-warning";
-                    ddLogicText = "E/A 0.8〜2.0 かつ DcT正常化 (160〜200 ms)。左房圧は上昇。";
+                } else if (ea >= 0.8 && ea < 2.0 && dct >= 160 && dct <= 200) {
+                    ddBadgeText = "Grade 2 (偽正常化型充満)"; ddBadgeClass = "bg-warning";
+                    ddLogicText = "E/A 0.8-2.0、DcT 160-200ms。左房圧は上昇パターン。";
                     lapStatusText = "上昇";
                 } else {
-                    if (septal_e > 6.0 && lavi <= 34 && lars > 18) {
-                        ddBadgeText = "Normal (正常)"; ddBadgeClass = "bg-normal";
-                        ddLogicText = "各拡張期指標はすべて正常範囲内。左房圧は正常。";
+                    // 初期分類から外れた境界例の評価（等号の論理漏れを修復）
+                    if (septal_e > 6.0 && lavi <= 34 && lars > 18 && ee <= 14) {
+                        ddBadgeText = "Normal (正常拡張能)"; ddBadgeClass = "bg-normal";
+                        ddLogicText = "各拡張期指標はすべて正常範囲内。推定左房圧は正常。";
                         lapStatusText = "正常";
                     } else {
-                        useLatestAseEvidence = true;
-                        if (lars <= 18 || lavi > 34 || ee > 14) {
-                            ddBadgeText = "Grade 2 (偽正常化)"; ddBadgeClass = "bg-warning";
-                            ddLogicText = "LARS ≦ 18%等による総合補正: 左房圧は上昇。";
-                            lapStatusText = "上昇";
+                        if (lars <= 18 || lavi > 34 || ee > 14 || septal_e <= 6.0) {
+                            if (ee > 14 || (lavi > 34 && lars <= 18)) {
+                                ddBadgeText = "Grade 2 (偽正常化型)"; ddBadgeClass = "bg-warning";
+                                ddLogicText = "構造・歪み指標（LAVI/LARS）またはE/e'に基づく補正判定。左房圧上昇あり。";
+                                lapStatusText = "上昇";
+                            } else {
+                                ddBadgeText = "Grade 1 (弛緩能低下)"; ddBadgeClass = "bg-info";
+                                ddLogicText = "心筋弛緩能指標低下優位（中隔側e'≦6.0など）。左房圧は正常維持。";
+                                lapStatusText = "正常";
+                            }
                         } else {
                             ddBadgeText = "Grade 1 (弛緩能低下)"; ddBadgeClass = "bg-info";
-                            ddLogicText = "初期弛緩遅延優位: 左房圧は正常。";
+                            ddLogicText = "初期弛緩遅延優位パターン。左房圧は正常。";
                             lapStatusText = "正常";
                         }
                     }
@@ -438,78 +442,102 @@
             document.getElementById('dd_badge').innerText = ddBadgeText;
             document.getElementById('dd_logic').innerText = ddLogicText;
 
+            // PCWP線形推定
             const lap_pcwp = (1.24 * ee) + 1.9;
             document.getElementById('lap_pcwp').innerText = lap_pcwp.toFixed(1);
 
+            // RAP判定（ASE 2015 三原則網羅型）
             let rap = 8; let rapStatusText = "中間値"; let rapBadgeClass = "bg-warning";
-            if (ivc_diam <= 21 && ivc_collapse >= 50) { rap = 3; rapStatusText = "正常域"; rapBadgeClass = "bg-normal"; }
-            else if (ivc_diam > 21 && ivc_collapse < 50) { rap = 15; rapStatusText = "上昇"; rapBadgeClass = "bg-danger"; }
+            if (ivc_diam <= 21 && ivc_collapse >= 50) { 
+                rap = 3; rapStatusText = "正常域 (3 mmHg)"; rapBadgeClass = "bg-normal"; 
+            } else if (ivc_diam > 21 && ivc_collapse < 50) { 
+                rap = 15; rapStatusText = "圧上昇 (15 mmHg)"; rapBadgeClass = "bg-danger"; 
+            } else {
+                rap = 8; rapStatusText = "中間値 (8 mmHg)"; rapBadgeClass = "bg-warning";
+            }
             document.getElementById('rap_calc').innerText = rap;
             document.getElementById('rap_badge').className = "status-badge " + rapBadgeClass;
             document.getElementById('rap_badge').innerText = rapStatusText;
 
+            // MS交絡アラート
             const isMS = (mva <= 2.0);
             document.getElementById('ms_lap_alert').style.display = isMS ? "block" : "none";
 
-            let la_status = (lavi >= 34) ? "左房拡大（LAVI " + lavi.toFixed(1) + " mL/m²）を認めます。" : "左房サイズ（LAVI " + lavi.toFixed(1) + " mL/m²）は正常です。";
-            if (lars < 20) la_status += "LAリザーバ strain (LARS)は " + lars + " %と低下し、左房リザーバ機能不全を伴います。";
+            let la_status = (lavi >= 34) ? "左房拡大（LAVI " + lavi.toFixed(1) + " mL/m²）を認めます。" : "左房サイズ（LAVI " + lavi.toFixed(1) + " mL/m²）は正常範囲内です。";
+            if (lars <= 18) la_status += "左房リザーバstrain（LARS）は " + lars + "% と低下しており、左房機能不全を伴います。";
 
-            let hfBadge = (lvef <= 40) ? "HFrEF" : (lvef < 50) ? "HFmrEF" : (lapStatusText.includes("上昇") || lars <= 18) ? "HFpEF" : "正常";
-            let hfClass = (lvef <= 40) ? "bg-danger" : (lvef < 50 || hfBadge === "HFpEF") ? "bg-warning" : "bg-normal";
+            // 心機能パターン評価（エコー所見としての客観表現）
+            let hfBadge = ""; let hfClass = "";
+            if (lvef <= 40) {
+                hfBadge = "HFrEFパターン (収縮高度低下)"; hfClass = "bg-danger";
+            } else if (lvef < 50) {
+                hfBadge = "HFmrEFパターン (収縮軽度低下)"; hfClass = "bg-warning";
+            } else {
+                if (lapStatusText.includes("上昇")) {
+                    hfBadge = "正常収縮・左室充満圧上昇 (HFpEFを示唆)"; hfClass = "bg-warning";
+                } else {
+                    hfBadge = "正常収縮・明確な充満圧上昇なし"; hfClass = "bg-normal";
+                }
+            }
             document.getElementById('hf_badge').className = "status-badge " + hfClass;
             document.getElementById('hf_badge').innerText = hfBadge;
 
-            let asBadge = (ava <= 1.0 && mpg >= 40) ? "High-gradient 重症AS" : (ava <= 1.0 && mpg < 40) ? "Low-gradient 重症AS" : (ava <= 1.5) ? "中等度 AS" : "ASなし";
+            // AS血行動態分類
+            let asBadge = (ava <= 1.0 && mpg >= 40) ? "High-gradient 重症AS" : (ava <= 1.0 && mpg < 40) ? "Low-gradient AS疑い (要詳細評価)" : (ava <= 1.5) ? "中等度 AS" : "ASなし";
             let asClass = (ava <= 1.0) ? "bg-danger" : (ava <= 1.5) ? "bg-info" : "bg-normal";
             document.getElementById('as_badge').className = "status-badge " + asClass;
             document.getElementById('as_badge').innerText = asBadge;
 
+            // MS血行動態分類（カッコ閉じ漏れタイポを完全に修正済）
             let msBadge = (mva > 2.0) ? "狭窄なし" : (mva > 1.5 ? "中等度 MS" : "重症 MS");
             let msClass = (mva <= 1.5) ? "bg-danger" : (mva <= 2.0 ? "bg-info" : "bg-normal");
             document.getElementById('ms_badge').className = "status-badge " + msClass;
             document.getElementById('ms_badge').innerText = msBadge;
 
+            // 統合テンプレート文字列の構築
             if (isAf) finalTemplate += "心房細動（Af）リズムです。\n";
             if (lvef <= 40) {
-                finalTemplate += "左室壁運動はびまん性に高度低下しており（LVEF " + lvef + " %）、収縮不全（HFrEF）の所見です。\n";
+                finalTemplate += "左室壁運動はびまん性に高度低下（LVEF " + lvef + "%）を認め、収縮不全パターンを呈しています。\n";
             } else {
-                finalTemplate += "左室収縮能は LVEF " + lvef + " % と保持されています（Simpson法）。\n";
+                finalTemplate += "左室収縮能は LVEF " + lvef + "% と保持されています（Simpson法）。\n";
             }
             
-            let msLapWarningText = isMS ? "（※注意: 機能性交絡のため参考値）" : "";
-            finalTemplate += "拡張期血行動態パラメータは、E/A比: " + (isAf ? "計測不可" : ea.toFixed(2)) + "、中隔側e': " + septal_e.toFixed(1) + " cm/s、算出E/e': " + ee.toFixed(1) + "、DcT: " + dct + " ms、LARS: " + lars + " % です。\n";
-            finalTemplate += " ・マトリクス判定に基づく左房圧（LAP動態）は ＝ 「" + lapStatusText + "」を呈しています " + msLapWarningText + "\n";
-            finalTemplate += "左室拡張機能分類は「" + ddBadgeText + "」と評価されます。\n";
+            let msLapWarningText = isMS ? "（※注意: 狭窄弁による交絡のため参考値）" : "";
+            finalTemplate += "拡張期血行動態パラメータは、E/A比: " + (isAf ? "計測不可" : ea.toFixed(2)) + "、中隔側e': " + septal_e.toFixed(1) + " cm/s、算出E/e': " + ee.toFixed(1) + "、DcT: " + dct + " ms、LARS: " + lars + "% です。\n";
+            finalTemplate += " ・マトリクス判定に基づく推定左房圧（LAP動態）は ＝ 「" + lapStatusText + "」の推移を示します " + msLapWarningText + "\n";
+            finalTemplate += "左室拡張機能評価分類は「" + ddBadgeText + "」に相当します。\n";
             finalTemplate += la_status + "\n";
             
-            if (trv > 2.8) finalTemplate += "三尖弁逆流速度は TR Vmax " + trv.toFixed(2) + " m/s と上昇しており、包括した後負荷圧の上昇（HFpEF病態支持）を認めます。\n";
-            finalTemplate += "下大静脈は呼気径 " + ivc_diam.toFixed(1) + " mm、呼吸性変動率 " + ivc_collapse + " % で、推定右房圧（RAP）は " + rap + " mmHg です。";
+            if (trv > 2.8) finalTemplate += "三尖弁逆流速度は TR Vmax " + trv.toFixed(2) + " m/s と上昇しており、包括的な後負荷圧上昇（左室充満圧上昇病態を支持）を認めます。\n";
+            finalTemplate += "下大静脈は呼気径 " + ivc_diam.toFixed(1) + " mm、呼吸性変動率 " + ivc_collapse + "%、ASE2015基準に基づく推定右房圧（RAP）は " + rap + " mmHg です。";
 
             document.getElementById('template_output').innerText = finalTemplate.trim();
             
+            // 学術的根拠エビデンス表示
             if (isAf) {
-                eduNotes.push("【心房細動下の拡張能評価】<b>『日本心エコー図学会：心房細動における左室拡張機能評価ガイドライン（2023年）』</b>に準拠。");
+                eduNotes.push("【心房細動下の拡張能評価】<b>『日本心エコー図学会：心房細動における左室拡張機能評価ガイドライン』</b>に準拠。中隔側E/e'≧15等を基準に判定。");
             }
             if (lapStatusText.includes("上昇")) {
-                eduNotes.push("【左室充満圧の病態評価】<b>『日本心エコー図学会：心不全における心エコー図検査の包括的活用ガイドライン（2025年改訂版）』</b>の基準に整合。");
+                eduNotes.push("【左室充満圧の病態評価】<b>『日本心エコー図学会：心不全における心エコー図検査の包括的活用ガイドライン』</b>の評価フローと整合。");
             }
             if (isMS) {
-                eduNotes.push("【弁膜症合併ピットフォール】<b>『日本循環器学会：弁膜症治療ガイドライン（2020年改訂版）』</b>に基づき、MS合併時はE/e'ベースの圧推定は参考値扱い。");
+                eduNotes.push("【弁膜症合併ピットフォール】<b>『JCS/JSCS 弁膜症治療ガイドライン』</b>に基づき、MS合併時は二尖弁口狭窄による血行動態交絡のため、E/e'による左房圧推定は適用外扱い。");
             }
-            if (ava <= 1.0 && mpg >= 40) {
-                eduNotes.push("【重症ASの判定】<b>『ASE/EACVI（2017年）』</b>における High-gradient 重症大動脈弁狭窄症基準。");
+            if (ava <= 1.0) {
+                eduNotes.push("【大動脈弁狭窄症判定】<b>『ASE/EACVI 弁狭窄評価勧告』</b>基準。Low-gradientかつAVA≦1.0の場合、1回拍出量（SVi）や誤差評価等の精査が必要。");
             }
-            if (useLatestAseEvidence || lars <= 18) {
-                eduNotes.push("<b style='color:var(--secondary);'>[引用エビデンス] 米国心エコー図学会（ASE）: Recommendations for the Evaluation of Left Ventricular Diastolic Function by Echocardiography and for Heart Failure With Preserved Ejection Fraction Diagnosis (2025年7月発表 最新アップデート)</b>");
+            if (lars <= 18) {
+                eduNotes.push("【左房歪み解析の臨床応用】近年の国際ステートメントに基づき、左房リザーバstrain（LARS）≦18%を構造・機能リモデリング障害の補助指標として適応。");
             }
+            eduNotes.push("【左室拡張機能・右心圧評価】<b>『ASE/EACVI 2016年 左室拡張機能評価勧告』および『ASE 2015年 右心系評価勧告』</b>に準拠。");
 
-            if(eduNotes.length === 0) eduNotes.push("主要な血行動態パラメータは各学会ガイドラインの正常範囲内です。");
             document.getElementById('edu_logic').innerHTML = "<ul><li style='margin-bottom:3px; list-style-type:none; padding-left:0;'>" + eduNotes.join("</li><li style='margin-bottom:3px; list-style-type:none; padding-left:0;'>") + "</li></ul>";
         }
 
         function resetToNormalData() {
             document.getElementById('is_af').checked = false; 
             document.getElementById('a_wave').disabled = false; 
+            savedAWaveValue = 0.67;
             
             document.getElementById('lvef').value = 60;
             document.getElementById('e_wave').value = 0.80;
