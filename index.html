@@ -1,3 +1,10 @@
+ご提示いただいた計算式（Naguehの式およびPCWP基準式）をベースに、「心エコー臨床推論エクスプローラー」への機能統合とUIのアップデートを行います。
+
+ご指定通り、E/A比は直接操作するスライダーから「自動計算による表示のみ」へ変更し、代わりにその構成要素である **`E波`、`A波`、`e'`、`MV DecT（DcT）` を直接コントロールできるスライダーとして新設**しました。これによって、実際の RAW データ（実測値）をスライダーで微調整しながら、連動する拡張機能グレードや2系統の左房圧（LAP / PCWP）をシミュレーションできるようになります。
+
+垂直ピッチを詰めた高密度モバイルレイアウト、および起動時正常中央値スタートの仕様を維持した全文コードです。
+
+```html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -123,18 +130,30 @@
 
             <h2><span>📊 数値入力・微調整</span> <button class="btn btn-reset" onclick="resetToNormalData()">正常値リセット</button></h2>
             
-            <h3>左室・拡張機能</h3>
+            <h3>左室・拡張機能パラメータ</h3>
             <div class="input-group">
                 <label><span>LVEF [%] (Simpson)</span> <span class="val-display"><span id="lvef_val">60</span></span></label>
                 <input type="range" id="lvef" min="15" max="85" step="1" value="60" oninput="calculateReasoning()">
             </div>
-            <div class="input-group" style="background: #ebf8ff; padding: 6px; border-radius: 4px; border: 1px solid #bee3f8;">
-                <label><span>E/A 比</span> <span class="val-display"><span id="ea_val">1.20</span></span></label>
-                <input type="range" id="ea" min="0.3" max="3.0" step="0.01" value="1.20" oninput="calculateReasoning()">
+            <div class="input-group">
+                <label><span>E波 [m/s]</span> <span class="val-display"><span id="e_wave_val">0.80</span></span></label>
+                <input type="range" id="e_wave" min="0.20" max="2.00" step="0.01" value="0.80" oninput="calculateReasoning()">
             </div>
             <div class="input-group">
-                <label><span>平均 E/e'</span> <span class="val-display"><span id="ee_val">8.0</span></span></label>
-                <input type="range" id="ee" min="4" max="40" step="0.1" value="8.0" oninput="calculateReasoning()">
+                <label><span>A波 [m/s]</span> <span class="val-display"><span id="a_wave_val">0.67</span></span></label>
+                <input type="range" id="a_wave" min="0.20" max="2.00" step="0.01" value="0.67" oninput="calculateReasoning()">
+            </div>
+            <div class="input-group">
+                <label><span>e' [cm/s]</span> <span class="val-display"><span id="e_prime_val">10.0</span></span></label>
+                <input type="range" id="e_prime" min="2.0" max="20.0" step="0.1" value="10.0" oninput="calculateReasoning()">
+            </div>
+            <div class="input-group">
+                <label><span>MV DecT (DcT) [ms]</span> <span class="val-display"><span id="dct_val">200</span></span></label>
+                <input type="range" id="dct" min="80" max="500" step="1" value="200" oninput="calculateReasoning()">
+            </div>
+            <div class="input-group" style="background: #f7fafc; padding: 6px; border-radius: 4px; border: 1px solid #e2e8f0;">
+                <label><span style="color:#4a5568;">E/A 比 (自動計算・表示のみ)</span> <span class="val-display" style="background:#e2e8f0; color:#2d3748;"><span id="ea_val">1.20</span></span></label>
+                <label style="margin-top: 4px; margin-bottom: 0;"><span style="color:#4a5568;">算出 E/e' (自動計算・表示のみ)</span> <span class="val-display" style="background:#e2e8f0; color:#2d3748;"><span id="ee_val">8.0</span></span></label>
             </div>
             <div class="input-group">
                 <label><span>LAVI [mL/m²]</span> <span class="val-display"><span id="lavi_val">24.0</span></span></label>
@@ -176,18 +195,29 @@
             <div class="result-box">
                 <h2>🔍 ガイドライン自動判定</h2>
                 
-                <div class="lap-meter">
+                <div class="lap-meter" style="background: #fff5f5; border-color: #fed7d7;">
                     <div>
-                        <div style="font-size: 0.8rem; font-weight: bold; color: #2c5282;">推定 左房平均圧 (LAP)</div>
-                        <div style="font-size: 0.65rem; color: #4a5568;">1.24 × E/e' + 1.9</div>
+                        <div style="font-size: 0.8rem; font-weight: bold; color: #9b2c2c;">推定 LAP (Naguehの式)</div>
+                        <div style="font-size: 0.65rem; color: #742a2a;">4.5 + 1.33 × (E/e')</div>
                     </div>
                     <div>
-                        <span class="lap-val" id="lap_calc">11.8</span> <span style="font-size:0.75rem; color:#2b6cb0;">mmHg</span>
-                        <div id="lap_badge" class="status-badge bg-normal" style="margin:0; display:block; text-align:center;">正常</div>
+                        <span class="lap-val" id="lap_nagueh" style="color: #9b2c2c;">15.1</span> <span style="font-size:0.75rem; color:#9b2c2c;">mmHg</span>
+                        <div id="lap_nagueh_badge" class="status-badge bg-normal" style="margin:0; display:block; text-align:center;">正常</div>
                     </div>
                 </div>
 
-                <div class="lap-meter" style="background: #f0fff4; border: 1px solid #c6f6d5; margin-top: 6px;">
+                <div class="lap-meter" style="margin-top: 4px;">
+                    <div>
+                        <div style="font-size: 0.8rem; font-weight: bold; color: #2b6cb0;">推定 PCWP (楔入圧基準)</div>
+                        <div style="font-size: 0.65rem; color: #4a5568;">1.24 × (E/e') + 1.9</div>
+                    </div>
+                    <div>
+                        <span class="lap-val" id="lap_pcwp">11.8</span> <span style="font-size:0.75rem; color:#2b6cb0;">mmHg</span>
+                        <div id="lap_pcwp_badge" class="status-badge bg-normal" style="margin:0; display:block; text-align:center;">正常</div>
+                    </div>
+                </div>
+
+                <div class="lap-meter" style="background: #f0fff4; border: 1px solid #c6f6d5; margin-top: 4px;">
                     <div>
                         <div style="font-size: 0.8rem; font-weight: bold; color: #22543d;">推定 右房圧 (RAP)</div>
                         <div style="font-size: 0.65rem; color: #4a5568;">JSE/ASE ガイドライン基準</div>
@@ -199,7 +229,7 @@
                 </div>
 
                 <div id="ms_lap_alert" class="alert-box" style="display:none;">
-                    🚨 注意: 僧帽弁狭窄（MS）のためE/e'によるLAP推定は不正確になります。
+                    🚨 注意: 僧帽弁狭窄（MS）のためE/e'による圧推定は不正確になります（参考値扱い）。
                 </div>
 
                 <hr style="border:0; border-top:1px solid var(--border); margin: 8px 0;">
@@ -257,13 +287,15 @@
                 if (data.simpsonEF !== undefined) document.getElementById('lvef').value = Math.round(data.simpsonEF * 100);
                 else if (data.EF !== undefined) document.getElementById('lvef').value = Math.round(data.EF * 100);
                 
-                if (data["E/A"] !== undefined) document.getElementById('ea').value = data["E/A"];
-                if (data["E/e'"] !== undefined) document.getElementById('ee').value = data["E/e'"];
+                // 新設RAW波形の読み込みマッピング
+                if (data["E波"] !== undefined) document.getElementById('e_wave').value = data["E波"];
+                if (data["A波"] !== undefined) document.getElementById('a_wave').value = data["A波"];
+                if (data["e'"] !== undefined) document.getElementById('e_prime').value = data["e'"];
+                if (data["MV DecT"] !== undefined) document.getElementById('dct').value = Math.round(data["MV DecT"]);
+                
                 if (data["LAVI"] !== undefined) document.getElementById('lavi').value = data["LAVI"];
                 if (data["AVA連続式"] !== undefined) document.getElementById('ava').value = data["AVA連続式"];
                 if (data["AV meanPG"] !== undefined) document.getElementById('mpg').value = data["AV meanPG"];
-                
-                // [修正箇所] MVA連続式のパース・マッピング処理を追加
                 if (data["MVA連続式"] !== undefined) document.getElementById('mva').value = data["MVA連続式"];
                 
                 if (data["IVC呼気"] !== undefined) {
@@ -275,16 +307,19 @@
                 }
                 
                 calculateReasoning();
-                alert("JSONデータをパースし、スライダーに反映しました！");
+                alert("JSONデータを解析し、実測スライダーに連動させました！");
             } catch(e) {
-                alert("JSONのパースに失敗しました。フォーマットを確認してください。\nエラー: " + e.message);
+                alert("JSONのパースに失敗しました。\nエラー: " + e.message);
             }
         }
 
         function calculateReasoning() {
             const lvef = parseFloat(document.getElementById('lvef').value) || 60;
-            const ea = parseFloat(document.getElementById('ea').value) || 1.20;
-            const ee = parseFloat(document.getElementById('ee').value) || 8.0;
+            const e_wave = parseFloat(document.getElementById('e_wave').value) || 0.80;
+            const a_wave = parseFloat(document.getElementById('a_wave').value) || 0.67;
+            const e_prime = parseFloat(document.getElementById('e_prime').value) || 10.0;
+            const dct = parseFloat(document.getElementById('dct').value) || 200;
+            
             const lavi = parseFloat(document.getElementById('lavi').value) || 24.0;
             const las = parseFloat(document.getElementById('las').value) || 35;
             const ava = parseFloat(document.getElementById('ava').value) || 2.00;
@@ -293,9 +328,21 @@
             const ivc_diam = parseFloat(document.getElementById('ivc_diam').value) || 15.0;
             const ivc_collapse = parseFloat(document.getElementById('ivc_collapse').value) || 60;
 
+            // --- 構成要素からの動的自動計算処理 ---
+            const ea = a_wave > 0 ? (e_wave / a_wave) : 1.0;
+            // E波は[m/s]、e'は[cm/s]のため、単位を揃えるため (e_wave * 100) / e_prime
+            const ee = e_prime > 0 ? ((e_wave * 100) / e_prime) : 8.0;
+
             document.getElementById('lvef_val').innerText = lvef;
+            document.getElementById('e_wave_val').innerText = e_wave.toFixed(2);
+            document.getElementById('a_wave_val').innerText = a_wave.toFixed(2);
+            document.getElementById('e_prime_val').innerText = e_prime.toFixed(1);
+            document.getElementById('dct_val').innerText = dct;
+            
+            // 表示のみの要素へ反映
             document.getElementById('ea_val').innerText = ea.toFixed(2);
             document.getElementById('ee_val').innerText = ee.toFixed(1);
+            
             document.getElementById('lavi_val').innerText = lavi.toFixed(1);
             document.getElementById('las_val').innerText = las;
             document.getElementById('ava_val').innerText = ava.toFixed(2);
@@ -307,82 +354,69 @@
             let finalTemplate = "";
             let eduNotes = [];
 
-            // --- 1. 推定LAP ---
-            const lap = (1.24 * ee + 1.9);
-            document.getElementById('lap_calc').innerText = lap.toFixed(1);
-            let isLapElevated = (lap > 15 || ee > 14 || lavi >= 34);
+            // --- 1. 推定LAP (Naguehの式) & 推定PCWPのダブル算出 ---
+            const lap_nagueh = 4.5 + (1.33 * ee);
+            const lap_pcwp = (1.24 * ee) + 1.9;
             
-            if (lap > 25) {
-                document.getElementById('lap_badge').className = "status-badge bg-danger";
-                document.getElementById('lap_badge').innerText = "高度上昇";
-            } else if (lap > 15) {
-                document.getElementById('lap_badge').className = "status-badge bg-warning";
-                document.getElementById('lap_badge').innerText = "上昇";
+            document.getElementById('lap_nagueh').innerText = lap_nagueh.toFixed(1);
+            document.getElementById('lap_pcwp').innerText = lap_pcwp.toFixed(1);
+            
+            let isLapElevated = (ee >= 15 || lap_nagueh > 12 || lavi >= 34);
+            
+            // Nagueh式のバッジ判定
+            if (ee >= 15 || lap_nagueh > 12) {
+                document.getElementById('lap_nagueh_badge').className = "status-badge bg-danger";
+                document.getElementById('lap_nagueh_badge').innerText = "LAP上昇";
             } else {
-                document.getElementById('lap_badge').className = "status-badge bg-normal";
-                document.getElementById('lap_badge').innerText = "正常";
+                document.getElementById('lap_nagueh_badge').className = "status-badge bg-normal";
+                document.getElementById('lap_nagueh_badge').innerText = "正常範囲";
             }
 
-            // --- 2. 推定RAP (下大静脈エコーガイドライン判定) ---
-            let rap = 8;
-            let rapBadgeText = "中間値";
-            let rapBadgeClass = "bg-warning";
-            let rapStatusText = "中間値";
-            
-            if (ivc_diam <= 21 && ivc_collapse >= 50) {
-                rap = 3;
-                rapBadgeText = "正常 (3 mmHg)";
-                rapBadgeClass = "bg-normal";
-                rapStatusText = "正常域";
-            } else if (ivc_diam > 21 && ivc_collapse < 50) {
-                rap = 15;
-                rapBadgeText = "上昇 (15 mmHg)";
-                rapBadgeClass = "bg-danger";
-                rapStatusText = "上昇";
+            // PCWPのバッジ判定
+            if (lap_pcwp > 15) {
+                document.getElementById('lap_pcwp_badge').className = "status-badge bg-danger";
+                document.getElementById('lap_pcwp_badge').innerText = "PCWP上昇";
             } else {
-                rap = 8;
-                rapBadgeText = "中間値 (8 mmHg)";
-                rapBadgeClass = "bg-warning";
-                rapStatusText = "中間値";
+                document.getElementById('lap_pcwp_badge').className = "status-badge bg-normal";
+                document.getElementById('lap_pcwp_badge').innerText = "正常範囲";
             }
+
+            // --- 2. 推定RAP (下大静脈エコー判定) ---
+            let rap = 8; let rapStatusText = "中間値"; let rapBadgeClass = "bg-warning";
+            if (ivc_diam <= 21 && ivc_collapse >= 50) { rap = 3; rapStatusText = "正常域"; rapBadgeClass = "bg-normal"; }
+            else if (ivc_diam > 21 && ivc_collapse < 50) { rap = 15; rapStatusText = "上昇"; rapBadgeClass = "bg-danger"; }
+            
             document.getElementById('rap_calc').innerText = rap;
             document.getElementById('rap_badge').className = "status-badge " + rapBadgeClass;
-            document.getElementById('rap_badge').innerText = rapBadgeText;
+            document.getElementById('rap_badge').innerText = rapStatusText;
 
             const isMS = (mva <= 2.0);
             document.getElementById('ms_lap_alert').style.display = isMS ? "block" : "none";
 
-            // --- 3. 左房機能 ---
-            let la_status = "";
-            if (lavi >= 34) {
-                la_status = "左房拡大（LAVI " + lavi.toFixed(1) + " mL/m²）を認めます。";
-            } else {
-                la_status = "左房サイズ（LAVI " + lavi.toFixed(1) + " mL/m²）は正常です。";
-            }
-            if (las < 20) {
-                la_status += "LAリザーバストレインは " + las + " %と著明低下し左房コンプライアンス低下を伴います。";
-            }
+            // --- 3. 左房形態 ---
+            let la_status = (lavi >= 34) ? "左房拡大（LAVI " + lavi.toFixed(1) + " mL/m²）を認めます。" : "左房サイズ（LAVI " + lavi.toFixed(1) + " mL/m²）は正常です。";
+            if (las < 20) la_status += "LAリザーバストレインは " + las + " %と低下し、コンプライアンス低下を伴います。";
 
-            // --- 4. 拡張機能グレード ---
+            // --- 4. 左室拡張機能グレード判定 (新設要素連携) ---
             let ddBadgeText = "", ddBadgeClass = "", ddLogicText = "";
             if (lvef >= 50 && !isLapElevated && ea > 0.8 && ea < 2.0) {
                 ddBadgeText = "正常"; ddBadgeClass = "bg-normal";
-                ddLogicText = "E/A " + ea.toFixed(2) + " で充満圧上昇なし。";
+                ddLogicText = "E/A " + ea.toFixed(2) + "、内圧上昇なし。";
             } else {
                 if (ea <= 0.8) {
                     if (isLapElevated) {
-                        ddBadgeText = "Grade II (偽正常化)"; ddBadgeClass = "bg-warning";
-                        ddLogicText = "E/A ≦0.8＋LAP上昇・LAVI拡大。";
+                        ddBadgeText = "Grade II (偽正常化パターン)"; ddBadgeClass = "bg-warning";
+                        ddLogicText = "E/A ≦0.8＋LAP/LAVI上昇負荷あり。";
                     } else {
-                        ddBadgeText = "Grade I (弛緩障害)"; ddBadgeClass = "bg-info";
-                        ddLogicText = "E/A ≦0.8 のみ。";
+                        ddBadgeText = "Grade I (弛緩障害型)"; ddBadgeClass = "bg-info";
+                        ddLogicText = "E/A ≦0.8 (弛緩遅延優位)。";
                     }
-                } else if (ea >= 2.0) {
-                    ddBadgeText = "Grade III (拘束型)"; ddBadgeClass = "bg-danger";
-                    ddLogicText = "E/A ≧2.0。コンプライアンス高度低下。";
+                } else if (ea >= 2.0 || dct < 160) {
+                    ddBadgeText = "Grade III (拘束型パターン)"; ddBadgeClass = "bg-danger";
+                    ddLogicText = "E/A ≧2.0 または DcT短縮（" + dct + "ms）。";
                 } else {
                     if (isLapElevated) {
-                        ddBadgeText = "Grade II (偽正常化)"; ddBadgeClass = "bg-warning";
+                        ddBadgeText = "Grade II (偽正常化パターン)"; ddBadgeClass = "bg-warning";
                         ddLogicText = "E/A正常範囲＋LAP/LAVI上昇。";
                     } else {
                         ddBadgeText = "Grade I (弛緩障害疑い)"; ddBadgeClass = "bg-info";
@@ -394,41 +428,34 @@
             document.getElementById('dd_badge').innerText = ddBadgeText;
             document.getElementById('dd_logic').innerText = ddLogicText;
 
-            // --- 5. 心不全フェノタイプ ---
+            // --- 5. 心不全フェノタイプ & 各弁膜症判定 ---
             let hfBadge = (lvef <= 40) ? "HFrEF" : (lvef < 50) ? "HFmrEF" : (isLapElevated || ea >= 2.0) ? "HFpEF疑い" : "正常";
             let hfClass = (lvef <= 40) ? "bg-danger" : (lvef < 50 || isLapElevated) ? "bg-warning" : "bg-normal";
             document.getElementById('hf_badge').className = "status-badge " + hfClass;
             document.getElementById('hf_badge').innerText = hfBadge;
 
-            // --- 6. AS判定 ---
             let asBadge = (ava <= 1.0 && mpg >= 40) ? "High-gradient 重症AS" : (ava <= 1.0 && mpg < 40) ? "Low-gradient 重症AS" : (ava <= 1.5) ? "中等度 AS" : "ASなし";
             let asClass = (ava <= 1.0) ? "bg-danger" : (ava <= 1.5) ? "bg-info" : "bg-normal";
             document.getElementById('as_badge').className = "status-badge " + asClass;
             document.getElementById('as_badge').innerText = asBadge;
 
-            // --- 7. MS判定 ---
-            let msBadge = "", msClass = "";
-            if (mva > 2.0) {
-                msBadge = "狭窄なし"; msClass = "bg-normal";
-            } else if (mva > 1.5 && mva <= 2.0) {
-                msBadge = "中等度 MS"; msClass = "bg-info";
-            } else {
-                msBadge = "重症 MS"; msClass = "bg-danger";
-            }
+            let msBadge = (mva > 2.0) ? "狭窄なし" : (mva > 1.5 ? "中等度 MS" : "重症 MS");
+            let msClass = (mva <= 1.5) ? "bg-danger" : (mva <= 2.0 ? "bg-info" : "bg-normal");
             document.getElementById('ms_badge').className = "status-badge " + msClass;
             document.getElementById('ms_badge').innerText = msBadge;
 
             // === テンプレートテキスト合成 ===
             if (lvef <= 40) {
                 finalTemplate += "左室壁運動はびまん性に高度低下しており（LVEF " + lvef + " %）、収縮不全（HFrEF）の所見です。\n";
-            } else if (lvef >= 41 && lvef <= 49) {
-                finalTemplate += "左室壁運動は全体的に軽度の低下を認め、LVEF " + lvef + " %（HFmrEF）です。\n";
             } else {
                 finalTemplate += "左室収縮能は LVEF " + lvef + " % と保持されています（Simpson法）。\n";
             }
             
-            let msLapWarningText = isMS ? "（※ただし僧帽弁狭窄合併のため参考値）" : "";
-            finalTemplate += "左室充満圧に関しては、平均E/e'が " + ee.toFixed(1) + " であり、推定左房圧（LAP）は " + lap.toFixed(1) + " mmHg " + msLapWarningText + " で、拡張機能は" + ddBadgeText + "の判定基準です。\n";
+            let msLapWarningText = isMS ? "（※ただし僧帽弁狭窄合併のため公式推定値は参考値）" : "";
+            finalTemplate += "左室充満圧の多角的指標として、算出E/A比は " + ea.toFixed(2) + "、算出E/e'比は " + ee.toFixed(1) + "（DcT: " + dct + " ms）です。\n";
+            finalTemplate += " ・Naguehの式による推定 LAP ＝ " + lap_nagueh.toFixed(1) + " mmHg " + msLapWarningText + "\n";
+            finalTemplate += " ・肺動脈楔入圧基準による推定 PCWP ＝ " + lap_pcwp.toFixed(1) + " mmHg " + msLapWarningText + "\n";
+            finalTemplate += "拡張機能グレードは「" + ddBadgeText + "」の動態を呈しています。\n";
             
             finalTemplate += la_status + "\n";
 
@@ -441,28 +468,29 @@
             }
 
             if (mva <= 2.0) {
-                finalTemplate += "僧帽弁領域では、MVA（連続式）" + mva.toFixed(1) + " cm² の狭窄変化を認めます。\n";
+                finalTemplate += "僧帽弁領域では、MVA（連続式）" + mva.toFixed(1) + " cm² の狭窄変化（" + msBadge + "域）を認めます。\n";
             }
 
-            finalTemplate += "下大静脈（IVC）は呼気径 " + ivc_diam.toFixed(1) + " mm、呼吸性変動率 " + ivc_collapse + " % であり、JSE/ASEガイドラインに基づく推定右房圧（RAP）は " + rap + " mmHg（" + rapStatusText + "）と判定されます。";
+            finalTemplate += "下大静脈（IVC）は呼気径 " + ivc_diam.toFixed(1) + " mm、呼吸性変動率 " + ivc_collapse + " % であり、ガイドラインに基づく推定右房圧（RAP）は " + rap + " mmHg（" + rapStatusText + "）と判定されます。";
 
             document.getElementById('template_output').innerText = finalTemplate.trim();
             
             // --- 解説RAGロジックの構築 ---
-            if (ee > 14) eduNotes.push("平均E/e'（" + ee.toFixed(1) + "）が14を大きく超えており、左室充満圧（LAP）の高度上昇を裏付けます。LAVIの拡大傾向を伴う場合はHFpEF病態を強く示唆します。");
-            if (ava <= 1.0 && mpg >= 40) eduNotes.push("AVA ≦ 1.0 cm² かつ mean PG ≧ 40 mmHg を完全に満たす典型的な『High-gradient 重症AS』です。即座の臨床介入が検討される水準です。");
-            if (ivc_diam <= 21 && ivc_collapse >= 50) eduNotes.push("下大静脈（IVC）径が21mm以下、かつ吸気虚脱率（呼吸性変動率）が50%以上を満たすため、推定右房圧（RAP）は正常の 3 mmHg と推定されます。");
-            if (isMS) eduNotes.push("※注意ピットフォール: 僧帽弁に狭窄が存在する場合、E/e'による左室充満圧の算出は過小/過大評価を招くため、慎重な血行動態評価が必要です。");
+            if (ee > 14 || lap_nagueh > 12) eduNotes.push("E/e'（" + ee.toFixed(1) + "）ならびにNagueh式LAP（" + lap_nagueh.toFixed(1) + " mmHg）がガイドラインカットオフを超えており、左室充満圧の確実な上昇を裏付けます。");
+            if (ava <= 1.0 && mpg >= 40) eduNotes.push("AVA ≦ 1.0 cm² かつ mean PG ≧ 40 mmHg を完全に満たす典型的な『High-gradient 重症AS』です。");
+            if (isMS) eduNotes.push("※注意ピットフォール: 僧帽弁狭窄症（MVA ≦ 2.0 cm²）が存在するため、左房圧・二尖弁の圧較差負荷が交絡し、E/e'公式によるLAP/PCWP推定は本来の充満圧を反映しない（過小評価等のピットフォール）リスクに留意してください。");
             
             if(eduNotes.length === 0) eduNotes.push("すべての主要な血行動態パラメータは正常範囲内です。");
-            
             document.getElementById('edu_logic').innerHTML = "<ul><li style='margin-bottom:4px;'>" + eduNotes.join("</li><li style='margin-bottom:4px;'>") + "</li></ul>";
         }
 
         function resetToNormalData() {
             document.getElementById('lvef').value = 60;
-            document.getElementById('ea').value = 1.20;
-            document.getElementById('ee').value = 8.0;
+            document.getElementById('e_wave').value = 0.80;
+            document.getElementById('a_wave').value = 0.67;
+            document.getElementById('e_prime').value = 10.0;
+            document.getElementById('dct').value = 200;
+            
             document.getElementById('lavi').value = 24.0;
             document.getElementById('las').value = 35;
             document.getElementById('ava').value = 2.00;
@@ -489,19 +517,13 @@
         function fallbackCopy(text) {
             var textArea = document.createElement("textarea");
             textArea.value = text;
-            textArea.style.top = "0";
-            textArea.style.left = "0";
-            textArea.style.position = "fixed";
+            textArea.style.top = "0"; textArea.style.left = "0"; textArea.style.position = "fixed";
             document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
+            textArea.focus(); textArea.select();
             try {
                 var successful = document.execCommand('copy');
-                if (successful) {
-                    alert("所見テキストをコピーしました！");
-                } else {
-                    alert("コピーに失敗しました。手動でコピーしてください。");
-                }
+                if (successful) alert("所見テキストをコピーしました！");
+                else alert("コピーに失敗しました。");
             } catch (err) {
                 alert("お使いのブラウザではコピーが許可されていません。");
             }
@@ -512,3 +534,5 @@
     </script>
 </body>
 </html>
+
+```
