@@ -3,272 +3,625 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>心エコー臨床推論エクスプローラー</title>
+    <title>心エコー所見 横断検索ダッシュボード</title>
     <style>
         :root {
             --primary: #1a365d;
             --secondary: #2b6cb0;
-            --accent: #e53e3e;
-            --bg-body: #edf2f7;
-            --bg-panel: #ffffff;
+            --accent: #e74c3c;
+            --bg-color: #f4f6f7;
+            --card-bg: #ffffff;
             --text-main: #2d3748;
-            --border: #e2e8f0;
+            --border: #cbd5e0;
+            --tag-bg: #e2e8f0;
+            --tag-text: #4a5568;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif; }
-        body { background-color: var(--bg-body); color: var(--text-main); padding: 8px; -webkit-text-size-adjust: 100%; }
-        
-        header { background-color: var(--primary); color: white; padding: 8px; border-radius: 6px; margin-bottom: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        header h1 { font-size: 1.1rem; line-height: 1.2; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.4;
+            padding: 8px;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: #fff;
+            padding: 10px 15px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        header h1 { font-size: 1.2rem; margin-bottom: 2px; }
         header p { font-size: 0.75rem; color: #cbd5e0; }
-        
-        .container { display: flex; flex-wrap: wrap; gap: 8px; max-width: 1500px; margin: 0 auto; }
-        
-        .left-panel { 
-            flex: 1 1 100%; 
-            background: var(--bg-panel); 
-            padding: 12px; 
-            border-radius: 6px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
-            border-top: 3px solid var(--secondary); 
-            position: sticky; 
+
+        .container {
+            display: flex;
+            max-width: 1500px;
+            margin: 0 auto;
+            gap: 8px;
+        }
+
+        .sidebar {
+            flex: 0 0 300px;
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            height: fit-content;
+            position: sticky;
             top: 8px;
-            max-height: 92vh;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            max-height: 94vh;
             overflow-y: auto;
         }
-        
-        .right-panel { flex: 2 1 100%; display: flex; flex-direction: column; gap: 8px; }
-        .result-box { background: var(--bg-panel); padding: 12px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        
-        h2 { font-size: 0.95rem; color: var(--primary); margin-bottom: 8px; border-bottom: 2px solid var(--border); padding-bottom: 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 5px;}
-        h3 { font-size: 0.85rem; color: #4a5568; margin-bottom: 6px; margin-top: 10px; padding-left: 6px; border-left: 3px solid var(--secondary); background: #f7fafc; padding-top: 2px; padding-bottom: 2px; border-radius: 0 4px 4px 0;}
-        h3:first-child { margin-top: 0; }
-        
-        .input-group { margin-bottom: 8px; }
-        .input-group label { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 2px; color: #4a5568; font-size: 0.8rem; align-items: center;}
-        .val-display { color: var(--secondary); font-size: 1.05em; background: #edf2f7; padding: 1px 6px; border-radius: 4px;}
-        
-        .json-area { width: 100%; height: 60px; font-family: monospace; font-size: 0.75rem; padding: 6px; border: 1px solid var(--border); border-radius: 4px; resize: vertical; margin-bottom: 6px; background: #fcfcfc; }
 
-        input[type="range"] { 
-            -webkit-appearance: none;
-            appearance: none;
-            width: 100%; 
-            height: 10px; 
-            background: #e2e8f0; 
-            border-radius: 5px; 
-            outline: none; 
-            margin-top: 3px;
-            margin-bottom: 3px;
+        .filter-group { margin-bottom: 12px; }
+        .filter-group:last-child { margin-bottom: 0; }
+
+        .filter-group h3 {
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 2px;
+            font-weight: bold;
         }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--secondary);
+
+        .search-box {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .json-area {
+            width: 100%;
+            height: 60px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            padding: 6px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            resize: vertical;
+            background: #fcfcfc;
+            margin-bottom: 4px;
+        }
+
+        .filter-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 6px 10px;
+            margin-bottom: 4px;
+            background: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
             cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            color: var(--text-main);
+            font-size: 0.8rem;
         }
-        
+
+        .filter-btn:hover { background-color: #edf2f7; }
+        .filter-btn.active {
+            background-color: #ebf8ff;
+            border-color: #63b3ed;
+            color: #2b6cb0;
+            font-weight: bold;
+        }
+
+        .btn-parse {
+            width: 100%;
+            padding: 6px;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 4px;
+        }
+        .btn-parse:active { background-color: #1a365d; }
+        .btn-clear {
+            width: 100%;
+            padding: 4px;
+            background-color: #718096;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        /* Main Content */
+        .main-content { flex: 1; }
+
+        .results-info {
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-size: 0.85rem;
+            font-weight: bold;
+            background: var(--card-bg);
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 8px;
+        }
+
+        /* Template Card */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-top: 4px solid #4a5568;
+            border-radius: 4px;
+            padding: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            display: flex;
+            flex-grow: 1;
+            flex-direction: column;
+        }
+
+        .card[data-category="総合型"] { border-top-color: #2b6cb0; }
+        .card[data-category="分類型"] { border-top-color: #2ca58d; }
+        .card[data-category="重症型"] { border-top-color: #c53030; }
+
+        .card-header { margin-bottom: 6px; }
+        .card-title { font-size: 0.95rem; color: var(--primary); font-weight: bold; }
+
+        .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+        .tag {
+            background: var(--tag-bg);
+            color: var(--tag-text);
+            font-size: 0.7rem;
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .cat-tag { background-color: var(--primary); color: #fff; }
+        .card[data-category="分類型"] .cat-tag { background-color: #2ca58d; }
+        .card[data-category="重症型"] .cat-tag { background-color: #c53030; }
+
+        .card-body {
+            background-color: #f8fafc;
+            padding: 8px;
+            border: 1px dashed #cbd5e0;
+            border-radius: 4px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            flex-grow: 1;
+            color: #2d3748;
+            line-height: 1.4;
+        }
+
+        .copy-btn {
+            margin-top: 8px;
+            padding: 6px;
+            background-color: #edf2f7;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-align: center;
+        }
+        .copy-btn:hover { background-color: var(--secondary); color: #fff; border-color: var(--secondary); }
+
+        /* メーター構造スタイルの追加 */
+        .lap-meter { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; background: #ebf8ff; padding: 8px; border-radius: 4px; border: 1px solid #bee3f8;}
+        .lap-val { font-size: 1.25rem; font-weight: bold; color: #2b6cb0; text-align: right;}
         .status-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-weight: bold; color: white; font-size: 0.75rem; margin-bottom: 4px; }
         .bg-normal { background-color: #48bb78; } .bg-warning { background-color: #ed8936; } .bg-danger { background-color: #e53e3e; } .bg-info { background-color: #4299e1; }
-        
-        .judgement-item { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border); }
-        .judgement-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        .judgement-item > div:first-child { font-weight: bold; margin-bottom: 2px; font-size: 0.85rem;}
-        
-        .template-text { background-color: #f8fafc; padding: 10px; font-family: monospace; font-size: 0.85rem; line-height: 1.4; white-space: pre-wrap; color: #2d3748; border: 1px solid #e2e8f0; border-left: 3px solid var(--secondary); }
         .note-box { background-color: #fffaf0; border: 1px solid #feebc8; padding: 10px; border-radius: 4px; }
         .note-title { color: #dd6b20; font-weight: bold; margin-bottom: 4px; font-size: 0.8rem; }
         .note-content { font-size: 0.8rem; color: #7b341e; margin-bottom: 0; line-height: 1.4; }
         .alert-box { background-color: #fff5f5; border-left: 3px solid #e53e3e; padding: 6px; font-size: 0.8rem; color: #c53030; margin-top: 6px; border-radius: 4px;}
-        
-        .lap-meter { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; background: #ebf8ff; padding: 8px; border-radius: 4px; border: 1px solid #bee3f8;}
-        .lap-val { font-size: 1.25rem; font-weight: bold; color: #2b6cb0; text-align: right;}
-        
-        .btn { padding: 6px 12px; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: background 0.2s; -webkit-tap-highlight-color: transparent;}
-        .btn-primary { background-color: var(--secondary); width: 100%; margin-top: 6px; display: block;}
-        .btn-primary:active { background-color: #1a365d; }
-        .btn-reset { background-color: #718096; font-size: 0.75rem; padding: 3px 8px; }
-        .btn-reset:active { background-color: #4a5568; }
 
-        @media (min-width: 768px) {
-            .left-panel { flex: 1 1 350px; }
-            .right-panel { flex: 2 1 500px; }
-            .btn-primary { width: auto; margin-top: 0; display: inline-block;}
-            h2.template-header { display: flex; justify-content: space-between; align-items: center; }
-        }
-        @media (max-width: 767px) {
-            .left-panel { position: static; max-height: none; }
-            .judgement-item { display: block; }
-            .lap-meter { flex-direction: column; align-items: flex-start; }
-            .lap-meter > div { width: 100%; display: flex; justify-content: space-between; align-items: center;}
+        @media (max-width: 1024px) {
+            .container { flex-direction: column; }
+            .sidebar { position: static; width: 100%; max-height: none; }
+            .grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
+
     <header>
-        <h1>心エコー臨床推論エクスプローラー</h1>
-        <p>iOS / Safari 最適化・高密度RAWデータ解析版</p>
+        <h1>心エコー図検査 所見テンプレートダッシュボード</h1>
+        <p>【高密度版】2系統左房圧推定（Naguehの式 / PCWP基準式）マルチファンクション対応</p>
     </header>
+
     <div class="container">
-        <div class="left-panel">
-            <h2><span>📋 RAWデータ読み込み</span></h2>
-            <div style="margin-bottom: 8px; margin-top: 3px;">
-                <textarea id="json_input" class="json-area" placeholder="ここにエコーのJSONデータを貼り付けてください..."></textarea>
-                <button class="btn btn-primary" style="margin-top:0; margin-bottom:4px;" onclick="parseJsonInput()">JSONデータをパースして反映</button>
+        <!-- Sidebar Filters -->
+        <aside class="sidebar">
+            <div class="filter-group">
+                <h3>📋 RAWデータ解析自動連動</h3>
+                <textarea id="json_input" class="json-area" placeholder="ここにエコーのJSONデータを貼り付け..."></textarea>
+                <button class="btn-parse" onclick="parseJsonAndFilter()">データ解析・該当テンプレート抽出</button>
+                <button class="btn-clear" onclick="clearJsonFilter()">解析フィルター解除</button>
             </div>
 
-            <h2><span>📊 数値入力・微調整</span> <button class="btn btn-reset" onclick="resetToNormalData()">正常値リセット</button></h2>
-            
-            <h3>左室・拡張機能パラメータ</h3>
-            <div class="input-group">
-                <label><span>LVEF [%] (Simpson)</span> <span class="val-display"><span id="lvef_val">60</span></span></label>
-                <input type="range" id="lvef" min="15" max="85" step="1" value="60" oninput="calculateReasoning()">
-            </div>
-            <div class="input-group">
-                <label><span>E波 [m/s]</span> <span class="val-display"><span id="e_wave_val">0.80</span></span></label>
-                <input type="range" id="e_wave" min="0.20" max="2.00" step="0.01" value="0.80" oninput="calculateReasoning()">
-            </div>
-            <div class="input-group">
-                <label><span>A波 [m/s]</span> <span class="val-display"><span id="a_wave_val">0.67</span></span></label>
-                <input type="range" id="a_wave" min="0.20" max="2.00" step="0.01" value="0.67" oninput="calculateReasoning()">
-            </div>
-            <div class="input-group">
-                <label><span>e' [cm/s]</span> <span class="val-display"><span id="e_prime_val">10.0</span></span></label>
-                <input type="range" id="e_prime" min="2.0" max="20.0" step="0.1" value="10.0" oninput="calculateReasoning()">
-            </div>
-            <div class="input-group">
-                <label><span>MV DecT (DcT) [ms]</span> <span class="val-display"><span id="dct_val">200</span></span></label>
-                <input type="range" id="dct" min="80" max="500" step="1" value="200" oninput="calculateReasoning()">
-            </div>
-            <div class="input-group" style="background: #f7fafc; padding: 6px; border-radius: 4px; border: 1px solid #e2e8f0;">
-                <label><span style="color:#4a5568;">E/A 比 (自動計算・表示のみ)</span> <span class="val-display" style="background:#e2e8f0; color:#2d3748;"><span id="ea_val">1.20</span></span></label>
-                <label style="margin-top: 4px; margin-bottom: 0;"><span style="color:#4a5568;">算出 E/e' (自動計算・表示のみ)</span> <span class="val-display" style="background:#e2e8f0; color:#2d3748;"><span id="ee_val">8.0</span></span></label>
-            </div>
-            <div class="input-group">
-                <label><span>LAVI [mL/m²]</span> <span class="val-display"><span id="lavi_val">24.0</span></span></label>
-                <input type="range" id="lavi" min="15" max="80" step="0.1" value="24.0" oninput="calculateReasoning()">
-            </div>
-            <div class="input-group">
-                <label><span>LA Strain [%]</span> <span class="val-display"><span id="las_val">35</span></span></label>
-                <input type="range" id="las" min="5" max="50" step="1" value="35" oninput="calculateReasoning()">
-            </div>
-
-            <h3>大動脈弁 (AS)</h3>
-            <div class="input-group">
-                <label><span>AVA 連続式 [cm²]</span> <span class="val-display"><span id="ava_val">2.00</span></span></label>
-                <input type="range" id="ava" min="0.3" max="2.5" step="0.01" value="2.00" oninput="calculateReasoning()">
-            </div>
-            <div class="input-group">
-                <label><span>mean PG [mmHg]</span> <span class="val-display"><span id="mpg_val">10</span></span></label>
-                <input type="range" id="mpg" min="5" max="150" step="1" value="10" oninput="calculateReasoning()">
-            </div>
-
-            <h3>僧帽弁 (MS)</h3>
-            <div class="input-group" style="background: #fff5f5; padding: 6px; border-radius: 4px; border: 1px solid #fed7d7;">
-                <label><span>MVA 連続式 [cm²]</span> <span class="val-display"><span id="mva_val">3.0</span></span></label>
-                <input type="range" id="mva" min="0.5" max="3.5" step="0.1" value="3.0" oninput="calculateReasoning()">
-            </div>
-
-            <h3>下大静脈 (IVC)</h3>
-            <div class="input-group" style="background: #f7fafc; padding: 6px; border-radius: 4px; border: 1px solid #e2e8f0;">
-                <label><span>IVC 呼気径 [mm]</span> <span class="val-display"><span id="ivc_diam_val">15.0</span></span></label>
-                <input type="range" id="ivc_diam" min="5.0" max="30.0" step="0.1" value="15.0" oninput="calculateReasoning()">
-            </div>
-            <div class="input-group" style="background: #f7fafc; padding: 6px; border-radius: 4px; border: 1px solid #e2e8f0;">
-                <label><span>IVC 呼吸性変動率 [%]</span> <span class="val-display"><span id="ivc_collapse_val">60</span></span></label>
-                <input type="range" id="ivc_collapse" min="0" max="100" step="1" value="60" oninput="calculateReasoning()">
-            </div>
-        </div>
-
-        <div class="right-panel">
-            <div class="result-box">
-                <h2>🔍 ガイドライン自動判定</h2>
+            <!-- [拡張表示部] 2系統の左房圧および右房圧・心不全自動推定判定パネル -->
+            <div class="filter-group" style="background: #f7fafc; padding: 8px; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 12px;">
+                <h3 style="border-bottom-color: #4a5568;">⚙️ リアルタイム血行動態推定</h3>
                 
-                <div class="lap-meter" style="background: #fff5f5; border-color: #fed7d7;">
+                <!-- ① Naguehの式メーター -->
+                <div class="lap-meter" style="background: #fff5f5; border-color: #fed7d7; margin-top:4px;">
                     <div>
-                        <div style="font-size: 0.8rem; font-weight: bold; color: #9b2c2c;">推定 LAP (Naguehの式)</div>
-                        <div style="font-size: 0.65rem; color: #742a2a;">4.5 + 1.33 × (E/e')</div>
+                        <div style="font-size: 0.75rem; font-weight: bold; color: #9b2c2c;">推定 LAP (Nagueh式)</div>
+                        <div style="font-size: 0.6rem; color: #742a2a;">4.5 + 1.33 × (E/e')</div>
                     </div>
-                    <div>
-                        <span class="lap-val" id="lap_nagueh" style="color: #9b2c2c;">15.1</span> <span style="font-size:0.75rem; color:#9b2c2c;">mmHg</span>
-                        <div id="lap_nagueh_badge" class="status-badge bg-normal" style="margin:0; display:block; text-align:center;">正常</div>
-                    </div>
-                </div>
-
-                <div class="lap-meter" style="margin-top: 4px;">
-                    <div>
-                        <div style="font-size: 0.8rem; font-weight: bold; color: #2b6cb0;">推定 PCWP (楔入圧基準)</div>
-                        <div style="font-size: 0.65rem; color: #4a5568;">1.24 × (E/e') + 1.9</div>
-                    </div>
-                    <div>
-                        <span class="lap-val" id="lap_pcwp">11.8</span> <span style="font-size:0.75rem; color:#2b6cb0;">mmHg</span>
-                        <div id="lap_pcwp_badge" class="status-badge bg-normal" style="margin:0; display:block; text-align:center;">正常</div>
+                    <div style="text-align: right;">
+                        <span class="lap-val" id="lap_nagueh_calc" style="color: #9b2c2c; font-size: 1.15rem;">15.1</span> <span style="font-size:0.65rem; color:#9b2c2c;">mmHg</span>
+                        <div id="lap_nagueh_badge" class="status-badge bg-normal" style="margin:0; padding:1px 6px; display:block; font-size:0.65rem; text-align:center;">正常</div>
                     </div>
                 </div>
 
-                <div class="lap-meter" style="background: #f0fff4; border: 1px solid #c6f6d5; margin-top: 4px;">
+                <!-- ② PCWP基準メーター -->
+                <div class="lap-meter" style="margin-top:4px;">
                     <div>
-                        <div style="font-size: 0.8rem; font-weight: bold; color: #22543d;">推定 右房圧 (RAP)</div>
-                        <div style="font-size: 0.65rem; color: #4a5568;">JSE/ASE ガイドライン基準</div>
+                        <div style="font-size: 0.75rem; font-weight: bold; color: #2b6cb0;">推定 PCWP (楔入圧基準)</div>
+                        <div style="font-size: 0.6rem; color: #2c5282;">1.24 × (E/e') + 1.9</div>
                     </div>
+                    <div style="text-align: right;">
+                        <span class="lap-val" id="lap_pcwp_calc" style="font-size: 1.15rem;">11.8</span> <span style="font-size:0.65rem; color:#2b6cb0;">mmHg</span>
+                        <div id="lap_pcwp_badge" class="status-badge bg-normal" style="margin:0; padding:1px 6px; display:block; font-size:0.65rem; text-align:center;">正常</div>
+                    </div>
+                </div>
+
+                <!-- ③ 下大静脈（RAP）メーター -->
+                <div class="lap-meter" style="background: #f0fff4; border-color: #c6f6d5; margin-top: 4px;">
                     <div>
-                        <span class="lap-val" id="rap_calc" style="color: #22543d;">3</span> <span style="font-size:0.75rem; color:#22543d;">mmHg</span>
-                        <div id="rap_badge" class="status-badge bg-normal" style="margin:0; display:block; text-align:center;">正常</div>
+                        <div style="font-size: 0.75rem; font-weight: bold; color: #22543d;">推定 RAP (右房圧)</div>
+                        <div style="font-size: 0.6rem; color: #22543d;">IVC径・呼吸性変動判定</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="lap-val" id="rap_calc" style="color: #22543d; font-size: 1.15rem;">3</span> <span style="font-size:0.65rem; color:#22543d;">mmHg</span>
+                        <div id="rap_badge" class="status-badge bg-normal" style="margin:0; padding:1px 6px; display:block; font-size:0.65rem; text-align:center;">正常</div>
                     </div>
                 </div>
-
-                <div id="ms_lap_alert" class="alert-box" style="display:none;">
-                    🚨 注意: 僧帽弁狭窄（MS）のためE/e'による圧推定は不正確になります（参考値扱い）。
-                </div>
-
-                <hr style="border:0; border-top:1px solid var(--border); margin: 8px 0;">
-
-                <div class="judgement-item">
-                    <div>左室拡張機能グレード:</div>
-                    <span id="dd_badge" class="status-badge bg-normal">正常</span>
-                    <div id="dd_logic" style="width:100%; font-size:0.8rem; color:#4a5568;"></div>
-                </div>
-
-                <div class="judgement-item">
-                    <div>心不全フェノタイプ:</div>
-                    <span id="hf_badge" class="status-badge bg-normal">正常心機能</span>
-                </div>
-
-                <div class="judgement-item" style="background:#f7fafc; padding:6px; border-radius:4px;">
-                    <div>AS 血行動態分類:</div>
-                    <span id="as_badge" class="status-badge bg-normal">狭窄なし</span>
-                </div>
-
-                <div class="judgement-item" style="background:#fff5f5; padding:6px; border-radius:4px; margin-bottom:0; margin-top:6px;">
-                    <div>MS 血行動態分類:</div>
-                    <span id="ms_badge" class="status-badge bg-normal">狭窄なし</span>
+                
+                <div id="ms_lap_alert" class="alert-box" style="display:none; font-size: 0.7rem; padding: 4px; margin-top: 4px;">
+                    🚨 注意: MS合併のためE/e'による圧推定は不正確になります。
                 </div>
             </div>
 
-            <div class="result-box">
-                <h2 class="template-header" style="border:none; padding:0;">
-                    📝 統合所見テキスト
-                    <button class="btn btn-primary" onclick="copyToClipboard()">コピーする</button>
-                </h2>
-                <div id="template_output" class="template-text"></div>
+            <div class="filter-group">
+                <h3>フリーワード横断検索</h3>
+                <input type="text" id="searchInput" class="search-box" placeholder="キーワードを入力...">
             </div>
 
-            <div class="result-box">
-                <h2>👨‍⚕️ 指導医の解説 (RAG)</h2>
-                <div class="note-box">
-                    <div class="note-title">📚 判定の根拠</div>
-                    <div id="edu_logic" class="note-content"></div>
-                </div>
+            <div class="filter-group">
+                <h3>カテゴリー分類</h3>
+                <button class="filter-btn active" id="cat-all" data-filter="category" data-val="all">すべてのカテゴリー</button>
+                <button class="filter-btn" id="cat-sougou" data-filter="category" data-val="総合型">総合型（疾患・病態統合所見）</button>
+                <button class="filter-btn" id="cat-bunrui" data-filter="category" data-val="分類型">機能分類型（左室・左房・右室）</button>
+                <button class="filter-btn" id="cat-juushou" data-filter="category" data-val="重症型">重症型（弁膜症重症度特化）</button>
             </div>
-        </div>
+
+            <div class="filter-group">
+                <h3>臓器・機能別タグ</h3>
+                <button class="filter-btn active" id="tag-all" data-filter="tag" data-val="all">すべてのタグ</button>
+                <button class="filter-btn" data-filter="tag" data-val="左房機能">左房機能・形態</button>
+                <button class="filter-btn" data-filter="tag" data-val="左室収縮">左室収縮能</button>
+                <button class="filter-btn" data-filter="tag" data-val="左室拡張">左室拡張能</button>
+                <button class="filter-btn" data-filter="tag" data-val="心不全">心不全・心筋症</button>
+                <button class="filter-btn" data-filter="tag" data-val="虚血">虚血性心疾患</button>
+                <button class="filter-btn" data-filter="tag" data-val="弁膜症">弁膜症</button>
+                <button class="filter-btn" data-filter="tag" data-val="右心・肺">右心・肺高血圧</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="results-info">
+                <span id="resultsCount">表示件数: 0 件</span>
+                <span id="activeFilterBadge" style="font-size: 0.75rem; color: var(--accent); font-weight: bold; display: none;">⚠️ RAWデータ連動フィルタリング中</span>
+            </div>
+            
+            <!-- [新設] 統合テキスト自動パースプレビュー表示エリア -->
+            <div class="result-box" id="integrated_text_area" style="display: none; margin-bottom: 8px; background: #fffdf5; border-left: 4px solid #dd6b20;">
+                <h2 style="border:none; margin-bottom:4px; font-size:0.9rem;">📝 解析連動・自動合成テキストプレビュー <button class="btn" style="background:var(--secondary); padding:2px 8px; font-size:0.7rem; float:right;" onclick="copyIntegratedText()">テキストをコピー</button></h2>
+                <div id="integrated_output" style="background:#ffffff; padding:8px; border:1px solid #e2e8f0; font-family:monospace; font-size:0.8rem; white-space:pre-wrap;"></div>
+            </div>
+
+            <div class="grid" id="templateGrid">
+                <!-- JavaScriptでここにカードが挿入される -->
+            </div>
+        </main>
     </div>
 
     <script>
-        function parseJsonInput() {
+        const templates = [
+            {
+                id: "la-1",
+                category: "分類型",
+                tags: ["左房機能"],
+                title: "左房容積・形態：正常",
+                text: "左房容積指数（LAVI）は ○○ mL/m² と正常範囲内であり、明らかな左房拡大を認めません。心房中隔に明らかな異常血流や短絡は認めません。"
+            },
+            {
+                id: "la-2",
+                category: "分類型",
+                tags: ["左房機能", "左室拡張"],
+                title: "左房容積：拡大（慢性負荷）",
+                text: "左房は前後径 ○○ mm、左房容積指数（LAVI）は ○○ mL/m²（\u226534 mL/m\u00b2）と拡大しています。慢性的な左室充満圧の上昇（拡張障害）や心房負荷が示唆される所見です。明らかな左心耳血栓は描出されません。"
+            },
+            {
+                id: "la-3",
+                category: "分類型",
+                tags: ["左房機能", "心不全"],
+                title: "左房リザーバ機能（LA Strain）低下",
+                text: "左房容積指数は ○○ mL/m² と拡大しており、スペックルトラッキング法による左房リザーバストレイン（LA reservoir strain）は ○○ % と低下を認めます。左室拡張能の低下に伴う左房コンプライアンスの著明な低下が示唆され、HFpEFの病態を支持する所見です。"
+            },
+            {
+                id: "la-4",
+                category: "分類型",
+                tags: ["左房機能", "弁膜症"],
+                title: "心房細動・巨大左房",
+                text: "心房細動リズムであり、左房容積指数は ○○ mL/m² と著明な巨大左房（Giant LA）を呈しています。左房内の血流停滞に伴うモヤモヤエコー（SEC: spontaneous echo contrast）を認め、血栓形成のハイリスク状態です。"
+            },
+            {
+                id: "comp-1",
+                category: "総合型",
+                tags: ["心不全", "左室収縮", "左房機能"],
+                title: "HFrEF (左室収縮不全を伴う心不全)",
+                text: "左室は LVDd ○○ mm と著明に拡大しており、壁運動はびまん性に高度低下を認めます（LVEF ○○ %）。HFrEFの病態に合致する所見です。\n左房の拡大（LAVI ○○ mL/m\u00b2）を伴い、僧帽弁流入血流波形は拘束型（E/A ○○, DcT ○○ ms）、平均 E/e' は ○○ と上昇しており、左室充満圧の高度な上昇が示唆されます。テザリングに伴う二次性MR（○○度）を合併しています。"
+            },
+            {
+                id: "comp-2",
+                category: "総合型",
+                tags: ["心不全", "左室拡張", "左房機能"],
+                title: "HFpEF (左室収縮能が保たれた心不全)",
+                text: "左室収縮能は LVEF ○○ % と保持されていますが、左室壁の同心性肥大（IVST ○○ mm, PWT ○○ mm）を認めます。\n拡張機能評価では、左房容積指数拡大（LAVI ○○ mL/m\u00b2）、組織ドプラ側壁 e' 低下（○○ m/s）、E/e' 上昇（○○）、TR Vmax上昇（○○ m/s）を認め、ガイドライン上の左室拡張不全（Grade ○○）の指標を満たします。慢性的な左室充満圧上昇に伴うHFpEFの病態に合致する所見です。"
+            },
+            {
+                id: "comp-3",
+                category: "総合型",
+                tags: ["心不全", "左室収縮", "弁膜症"],
+                title: "拡張型心筋症 (DCM) 疑い",
+                text: "左室は球形化し著明に拡大（LVDd ○○ mm, LVEDV ○○ mL）しており、壁の菲薄化を伴います。\n壁運動は特定の冠動脈領域に一致しないびまん性の高度低下（LVEF ○○ %）を呈し、拡張型心筋症（DCM）が強く疑われます。左室拡大に伴う乳頭筋の変位により、テザリングによる二次性MR（○○度）を合併しています。"
+            },
+            {
+                id: "comp-4",
+                category: "総合型",
+                tags: ["心不全", "弁膜症"],
+                title: "閉塞性肥大型心筋症 (HOCM)",
+                text: "基部心室中隔に限局した非対称性の著明な肥大（IVST ○○ mm）を認めます。\n収縮期に僧帽弁前尖の収縮期前方運動（SAM）を認め、これ伴う左室流出路狭窄（最大流速 ○○ m/s, 最大圧較差 ○○ mmHg）および後方へ向かう僧帽弁逆流（MR ○○度）を合併しています。バルサルバ負荷により圧較差は ○○ mmHg まで増悪します。"
+            },
+            {
+                id: "comp-5",
+                category: "総合型",
+                tags: ["心不全", "左室収縮", "左房機能"],
+                title: "心アミロイドーシス疑い",
+                text: "左室壁全体に顆粒状の高エコー（granular sparkling）を伴う著明な求心性肥大（IVST ○○ mm）を認めます。\nLVEFは ○○ % と保持されていますが、GLS（長軸方向ストレイン）は -○○ % と低下し、心尖部の保持（Apical Sparing）という特徴的なパターンを呈しています。両心房の著明な拡大、心房中隔の肥厚、および心嚢液貯留を伴い、心アミロイドーシスを強く疑うエコー所見です。"
+            },
+            {
+                id: "comp-5b",
+                category: "総合型",
+                tags: ["心不全", "左室収縮"],
+                title: "心臓サルコイドーシス疑い",
+                text: "左室の心室中隔基部等において、冠動脈支配領域に一致しない限局性の壁の菲薄化と壁運動低下（akinesis）を認めます。一部に瘤状変化（aneurysmal change）を疑う所見を認め、心臓サルコイドーシスを考慮する所見です。LVEFは全体として ○○ % に低下しています。"
+            },
+            {
+                id: "comp-6",
+                category: "総合型",
+                tags: ["虚血", "左室収縮"],
+                title: "急性心筋梗塞 (AMI) / ACS",
+                text: "左室 ○○にかけて、局所壁運動異常（severe hypokinesis \u301cakinesis）を認めます。急性期の虚血または梗塞（ACS/AMI）を示唆する所見です。"
+            },
+            {
+                id: "comp-7",
+                category: "総合型",
+                tags: ["虚血", "左室収縮"],
+                title: "陳旧性心筋梗塞 (OMI)",
+                text: "左室 ○○にかけて壁の明らかな菲薄化とエコー輝度の上昇を認め、陳旧性心筋梗塞（OMI）の所見です。"
+            },
+            {
+                id: "comp-8",
+                category: "総合型",
+                tags: ["虚血", "右心・肺"],
+                title: "心室中隔穿孔 (VSP) - AMI合併症",
+                text: "急性心筋梗塞に合併し、心室中隔において連続性が絶たれており穿孔（VSP）を認めます。カラードプラにて左室から右室へ向かう短絡血流を認めます。"
+            },
+            {
+                id: "comp-9",
+                category: "総合型",
+                tags: ["右心・肺", "心不全"],
+                title: "急性肺塞栓症 / 急性肺性心",
+                text: "右室は著明に拡大し、心室中隔は左室側へ圧排され、左室は D-shape を呈しています。McConnell's sign 陽性。TR Vmax上昇を伴い急性肺性心に典型的です。"
+            },
+            {
+                id: "comp-10",
+                category: "総合型",
+                tags: ["弁膜症", "心不全"],
+                title: "感染性心内膜炎 (IE) 疑い",
+                text: "弁尖に可動性を伴う高エコー腫瘤（疣贅：Vegetation 疑い）が付着しています。"
+            },
+            {
+                id: "class-1",
+                category: "分類型",
+                tags: ["左室収縮"],
+                title: "左室収縮機能：正常",
+                text: "左室の壁運動は正常であり、局所壁運動異常は認めません。LVEFは正常に保持されています。"
+            },
+            {
+                id: "class-2",
+                category: "分類型",
+                tags: ["左室収縮"],
+                title: "左室収縮機能：高度低下",
+                text: "左室の壁運動はびまん性に著明に低下しており、高度の左室収縮不全を認めます。"
+            },
+            {
+                id: "class-3",
+                category: "分類型",
+                tags: ["左室拡張"],
+                title: "左室拡張機能：正常",
+                text: "左室拡張機能の主要パラメータは正常範囲内であり、現時点で明らかな左室拡張不全や左室充満圧の上昇は認められません。"
+            },
+            {
+                id: "class-4",
+                category: "分類型",
+                tags: ["左室拡張", "左房機能"],
+                title: "左室拡張機能：Grade I (弛緩障害)",
+                text: "僧帽弁流入血流波形は E/A \u22640.8 であり、Grade I の拡張不全（弛緩障害型）を認めます。"
+            },
+            {
+                id: "class-5",
+                category: "分類型",
+                tags: ["左室拡張", "左房機能"],
+                title: "左室拡張機能：Grade II (偽正常化パターン)",
+                text: "僧帽弁流入血流波形は E/A 0.8〜2.0 ですが、組織ドプラ指標の低下および 平均 E/e' の上昇（\uff1e14）、LAVI拡大（\u226534 mL/m\u00b2）を伴い、Grade II 拡張不全（偽正常化パターン）を呈しています。左室充満圧の中等度上昇が示唆されます。"
+            },
+            {
+                id: "class-6",
+                category: "分類型",
+                tags: ["左室拡張", "左房機能"],
+                title: "左室拡張機能：Grade III (拘束型パターン)",
+                text: "僧帽弁流入血流波形は E/A \u22652.0、DcT短縮（＜160 ms）であり、Grade III 拡張不全（拘束型パターン）を認めます。左室充満圧の高度上昇が示唆されます。"
+            },
+            {
+                id: "class-7",
+                category: "分類型",
+                tags: ["右心・肺"],
+                title: "右室機能・肺高血圧症",
+                text: "三尖弁逆流速度（TR Vmax）速度上昇、または TR maxPG の上昇を認め、推定肺動脈収縮期圧（PASP）の上昇、肺高血圧症の存在が示唆されます。"
+            },
+            {
+                id: "sev-1",
+                category: "重症型",
+                tags: ["弁膜症", "左室収縮"],
+                title: "大動脈弁狭窄症：軽度〜中等度 AS",
+                text: "AVA ＞ 1.0 cm² または mean PG ＜ 40 mmHg。血行動態的には軽度〜中等度の大動脈弁狭窄症の所見です。"
+            },
+            {
+                id: "sev-2",
+                category: "重症型",
+                tags: ["弁膜症", "左室収縮"],
+                title: "大動脈弁狭窄症：高圧較差 重症 AS (High-gradient)",
+                text: "mean PG \u226540 mmHg、かつ AVA ＜1.0 cm² であり、典型的な「高圧較差 重症大動脈弁狭窄症」の指標を満たします。"
+            },
+            {
+                id: "sev-3",
+                category: "重症型",
+                tags: ["弁膜症", "左室収縮"],
+                title: "大動脈弁狭窄症：Paradoxical LF-LG 重症 AS",
+                text: "AVA ＜1.0 cm²、mean PG ＜40 mmHg ですが、高度な同心性左室肥大により腔が狭小化し、低流量状態にある「Paradoxical Low-flow, Low-gradient 重症AS」の病態です。"
+            },
+            {
+                id: "sev-4",
+                category: "重症型",
+                tags: ["弁膜症", "左室収縮"],
+                title: "大動脈弁狭窄症：Classical LF-LG 重症 AS",
+                text: "AVA ＜1.0 cm²、mean PG ＜40 mmHg で、LVEFが低下しているために圧較差が過小評価されている状態（Classical LF-LG 重症AS）です。"
+            },
+            {
+                id: "sev-5",
+                category: "重症型",
+                tags: ["弁膜症", "左房機能"],
+                title: "僧帽弁逆流症：一次性(器質性) 重症 MR",
+                text: "腱索断裂や逸脱による器質的な重症僧帽弁逆流症（Severe primary MR）の所見です。"
+            },
+            {
+                id: "sev-6",
+                category: "重症型",
+                tags: ["弁膜症", "左室収縮"],
+                title: "僧帽弁逆流症：二次性(機能性) 重症 MR",
+                text: "左室拡大・乳頭筋変位のテザリングに伴う、重度の二次性僧帽弁逆流症（Severe secondary MR）の所見です。"
+            },
+            {
+                id: "sev-7",
+                category: "重症型",
+                tags: ["弁膜症"],
+                title: "大動脈弁逆流症：重症 AR",
+                text: "逆流ジェットや下行大動脈における拡張期全血流逆転を認め、重度の大動脈弁逆流症（Severe AR）と評価します。"
+            },
+            {
+                id: "sev-8",
+                category: "重症型",
+                tags: ["弁膜症", "右心・肺"],
+                title: "三尖弁逆流症：重症 TR",
+                text: "三尖弁輪の著明な拡大に伴う重度の三尖弁逆流症（Severe TR）と評価します。"
+            },
+            {
+                id: "sev-9",
+                category: "重症型",
+                tags: ["弁膜症", "左房機能"],
+                title: "僧帽弁狭窄症：リウマチ性 重症 MS",
+                text: "MVA（連続式）\u22641.5 cm² または 2.0 cm² 以下の交連部癒合・ドーミングを伴う僧帽弁狭窄症（MS）の所見です。"
+            }
+        ];
+
+        const grid = document.getElementById("templateGrid");
+        const countDisplay = document.getElementById("resultsCount");
+        const searchInput = document.getElementById("searchInput");
+        const filterBtns = document.querySelectorAll(".filter-btn");
+        const filterBadge = document.getElementById("activeFilterBadge");
+        
+        let currentCategory = "all";
+        let currentTag = "all";
+        let currentSearch = "";
+        let targetCardIds = null; 
+
+        function renderCards() {
+            grid.innerHTML = "";
+            let count = 0;
+
+            templates.forEach(t => {
+                if (targetCardIds !== null && !targetCardIds.includes(t.id)) return;
+                if (currentCategory !== "all" && t.category !== currentCategory) return;
+                if (currentTag !== "all" && !t.tags.includes(currentTag)) return;
+                if (currentSearch !== "") {
+                    const term = currentSearch.toLowerCase();
+                    if (!t.title.toLowerCase().includes(term) && !t.text.toLowerCase().includes(term)) {
+                        return;
+                    }
+                }
+
+                const card = document.createElement("div");
+                card.className = "card";
+                card.setAttribute("data-category", t.category);
+
+                const tagsHtml = t.tags.map(tag => `<span class="tag">${tag}</span>`).join("");
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="tags">
+                            <span class="tag cat-tag">${t.category}</span>
+                            ${tagsHtml}
+                        </div>
+                        <div class="card-title" style="margin-top: 4px;">${t.title}</div>
+                    </div>
+                    <div class="card-body" id="text-${t.id}">${t.text}</div>
+                    <button class="copy-btn" onclick="copyText('text-${t.id}')">所見をコピーする</button>
+                `;
+                grid.appendChild(card);
+                count++;
+            });
+
+            countDisplay.textContent = `表示件数: ${count} 件`;
+        }
+
+        // [ロジック変更部] 2系統の左房圧算出を組み込んだパース処理
+        function parseJsonAndFilter() {
             const rawText = document.getElementById('json_input').value.trim();
             if(!rawText) {
                 alert("JSONデータが空です。");
@@ -276,256 +629,182 @@
             }
             try {
                 const data = JSON.parse(rawText);
-                
-                if (data.simpsonEF !== undefined) document.getElementById('lvef').value = Math.round(data.simpsonEF * 100);
-                else if (data.EF !== undefined) document.getElementById('lvef').value = Math.round(data.EF * 100);
-                
-                // 新設RAW波形の読み込みマッピング
-                if (data["E波"] !== undefined) document.getElementById('e_wave').value = data["E波"];
-                if (data["A波"] !== undefined) document.getElementById('a_wave').value = data["A波"];
-                if (data["e'"] !== undefined) document.getElementById('e_prime').value = data["e'"];
-                if (data["MV DecT"] !== undefined) document.getElementById('dct').value = Math.round(data["MV DecT"]);
-                
-                if (data["LAVI"] !== undefined) document.getElementById('lavi').value = data["LAVI"];
-                if (data["AVA連続式"] !== undefined) document.getElementById('ava').value = data["AVA連続式"];
-                if (data["AV meanPG"] !== undefined) document.getElementById('mpg').value = data["AV meanPG"];
-                if (data["MVA連続式"] !== undefined) document.getElementById('mva').value = data["MVA連続式"];
-                
-                if (data["IVC呼気"] !== undefined) {
-                    document.getElementById('ivc_diam').value = data["IVC呼気"];
-                    if (data["IVC吸気"] !== undefined && data["IVC呼気"] > 0) {
-                        const collapseRate = Math.round(((data["IVC呼気"] - data["IVC吸気"]) / data["IVC呼気"]) * 100);
-                        document.getElementById('ivc_collapse').value = collapseRate;
-                    }
+                const matchedIds = [];
+
+                const lvef = (data.simpsonEF !== undefined) ? data.simpsonEF * 100 : (data.EF !== undefined ? data.EF * 100 : 60);
+                const ee = data["E/e'"] || 8.0;
+                const lavi = data["LAVI"] || 24.0;
+                const mva = data["MVA連続式"] || 3.0;
+                const ava = data["AVA連続式"] || 2.0;
+                const mpg = data["AV meanPG"] || 10;
+                const tr_maxpg = data["TR maxPG"] || 16.0;
+                const tr_vmax = data["TR Vmax"] || 2.0;
+                const ea = data["E/A"] || 1.2;
+                const ivc_breathe = data["IVC呼気"] || 15.0;
+                const ivc_insp = data["IVC吸気"] || 6.0;
+
+                // --- ① 2系統の左房圧・楔入圧計算 ---
+                const lap_nagueh = 4.5 + (1.33 * ee);
+                const pcwp_calc = (1.24 * ee) + 1.9;
+
+                // 画面要素へレンダリング・明記
+                document.getElementById('lap_nagueh_calc').innerText = lap_nagueh.toFixed(1);
+                document.getElementById('lap_pcwp_calc').innerText = pcwp_calc.toFixed(1);
+
+                // Nagueh式の閾値評価（E/e' 15以上、またはLAP 12mmHg超で上昇）
+                if (ee >= 15 || lap_nagueh > 12) {
+                    document.getElementById('lap_nagueh_badge').className = "status-badge bg-danger";
+                    document.getElementById('lap_nagueh_badge').innerText = "LAP上昇";
+                } else {
+                    document.getElementById('lap_nagueh_badge').className = "status-badge bg-normal";
+                    document.getElementById('lap_nagueh_badge').innerText = "正常範囲";
                 }
+
+                // PCWP式の閾値評価（臨床的な正常上限15mmHgを基準）
+                if (pcwp_calc > 15) {
+                    document.getElementById('lap_pcwp_badge').className = "status-badge bg-danger";
+                    document.getElementById('lap_pcwp_badge').innerText = "PCWP上昇";
+                } else {
+                    document.getElementById('lap_pcwp_badge').className = "status-badge bg-normal";
+                    document.getElementById('lap_pcwp_badge').innerText = "正常範囲";
+                }
+
+                // --- ② 右房圧（RAP）計算 ---
+                let rap = 8;
+                let rapStatus = "中間値";
+                let rapBadge = "bg-warning";
                 
-                calculateReasoning();
-                alert("JSONデータを解析し、実測スライダーに連動させました！");
+                // 変動率の自動逆算
+                let collapseRate = Math.round(((ivc_breathe - ivc_insp) / ivc_breathe) * 100);
+                if (ivc_breathe <= 21 && collapseRate >= 50) { rap = 3; rapStatus = "正常域"; rapBadge = "bg-normal"; }
+                else if (ivc_breathe > 21 && collapseRate < 50) { rap = 15; rapStatus = "上昇"; rapBadge = "bg-danger"; }
+                
+                document.getElementById('rap_calc').innerText = rap;
+                document.getElementById('rap_badge').className = "status-badge " + rapBadge;
+                document.getElementById('rap_badge').innerText = rapStatus;
+
+                // MSフラグとアラート制御
+                const isMS = (mva <= 2.0);
+                document.getElementById('ms_lap_alert').style.display = isMS ? "block" : "none";
+
+                // --- ③ テンプレートフィルタリング分岐群 ---
+                if (lavi >= 34) { matchedIds.push("la-2"); matchedIds.push("la-3"); }
+                else { matchedIds.push("la-1"); }
+
+                if (ee >= 15 || lap_nagueh > 12 || lavi >= 34) {
+                    if (ea >= 2.0) matchedIds.push("class-6");
+                    else matchedIds.push("class-5");
+                } else if (ea <= 0.8) { matchedIds.push("class-4"); }
+                else { matchedIds.push("class-3"); }
+
+                if (lvef >= 50 && (ee >= 15 || lavi >= 34)) { matchedIds.push("comp-2"); }
+                else if (lvef <= 40) { matchedIds.push("comp-1"); matchedIds.push("class-2"); }
+                else { matchedIds.push("class-1"); }
+
+                if (ava <= 1.0) {
+                    if (mpg >= 40) matchedIds.push("sev-2");
+                    else if (lvef >= 50) matchedIds.push("sev-3");
+                    else matchedIds.push("sev-4");
+                } else if (ava <= 1.5 || mpg >= 20) { matchedIds.push("sev-1"); }
+
+                if (isMS) { matchedIds.push("sev-9"); }
+                if (tr_maxpg >= 30 || tr_vmax >= 2.7) { matchedIds.push("class-7"); }
+
+                targetCardIds = matchedIds;
+                filterBadge.style.display = "inline";
+                resetSidebarActiveState();
+                renderCards();
+
+                // --- ④ パース連動レポートテキストの自動合成 ---
+                generateIntegratedReport(lvef, ee, lap_nagueh, pcwp_calc, lavi, ea, ava, mpg, mva, ivc_breathe, collapseRate, rap, rapStatus, isMS);
+
             } catch(e) {
                 alert("JSONのパースに失敗しました。\nエラー: " + e.message);
             }
         }
 
-        function calculateReasoning() {
-            const lvef = parseFloat(document.getElementById('lvef').value) || 60;
-            const e_wave = parseFloat(document.getElementById('e_wave').value) || 0.80;
-            const a_wave = parseFloat(document.getElementById('a_wave').value) || 0.67;
-            const e_prime = parseFloat(document.getElementById('e_prime').value) || 10.0;
-            const dct = parseFloat(document.getElementById('dct').value) || 200;
-            
-            const lavi = parseFloat(document.getElementById('lavi').value) || 24.0;
-            const las = parseFloat(document.getElementById('las').value) || 35;
-            const ava = parseFloat(document.getElementById('ava').value) || 2.00;
-            const mpg = parseFloat(document.getElementById('mpg').value) || 10;
-            const mva = parseFloat(document.getElementById('mva').value) || 3.0;
-            const ivc_diam = parseFloat(document.getElementById('ivc_diam').value) || 15.0;
-            const ivc_collapse = parseFloat(document.getElementById('ivc_collapse').value) || 60;
+        // 統合テキスト自動合成関数
+        function generateIntegratedReport(lvef, ee, lap_nagueh, pcwp_calc, lavi, ea, ava, mpg, mva, ivc, collapse, rap, rapStatus, isMS) {
+            let txt = `【左室壁運動・収縮能】\n左室収縮能は LVEF ${lvef.toFixed(0)} % と保持されています。\n\n`;
+            if (lvef <= 40) txt = `【左室壁運動・収縮能】\n左室壁運動はびまん性に高度低下を認め、LVEF ${lvef.toFixed(0)} %（HFrEF）の所見です。\n\n`;
 
-            // --- 構成要素からの動的自動計算処理 ---
-            const ea = a_wave > 0 ? (e_wave / a_wave) : 1.0;
-            // E波は[m/s]、e'は[cm/s]のため、単位を揃えるため (e_wave * 100) / e_prime
-            const ee = e_prime > 0 ? ((e_wave * 100) / e_prime) : 8.0;
+            let msWarning = isMS ? "（※注意: 僧帽弁狭窄合併のため公式推定値は参考値）" : "";
+            txt += `【左室拡張能・充満圧推定】\n平均E/e'は ${ee.toFixed(1)} です。複数の血行動態算出式に基づく推定値は以下の通りです：\n`;
+            txt += ` ・Nagueh（ナゲ）の式による推定 LAP ＝ ${lap_nagueh.toFixed(1)} mmHg ${msWarning}\n`;
+            txt += ` ・楔入圧基準式による推定 PCWP ＝ ${pcwp_calc.toFixed(1)} mmHg ${msWarning}\n`;
+            txt += ` 左房容積指数（LAVI）は ${lavi.toFixed(1)} mL/m² であり、`;
+            txt += (lavi >= 34) ? "慢性的な内圧上昇（左室拡張障害 Grade II 以上）を示唆する左房拡大を認めます。\n\n" : "左房サイズは正常範囲内です。\n\n";
 
-            document.getElementById('lvef_val').innerText = lvef;
-            document.getElementById('e_wave_val').innerText = e_wave.toFixed(2);
-            document.getElementById('a_wave_val').innerText = a_wave.toFixed(2);
-            document.getElementById('e_prime_val').innerText = e_prime.toFixed(1);
-            document.getElementById('dct_val').innerText = dct;
-            
-            // 表示のみの要素へ反映
-            document.getElementById('ea_val').innerText = ea.toFixed(2);
-            document.getElementById('ee_val').innerText = ee.toFixed(1);
-            
-            document.getElementById('lavi_val').innerText = lavi.toFixed(1);
-            document.getElementById('las_val').innerText = las;
-            document.getElementById('ava_val').innerText = ava.toFixed(2);
-            document.getElementById('mpg_val').innerText = mpg;
-            document.getElementById('mva_val').innerText = mva.toFixed(1);
-            document.getElementById('ivc_diam_val').innerText = ivc_diam.toFixed(1);
-            document.getElementById('ivc_collapse_val').innerText = ivc_collapse;
-
-            let finalTemplate = "";
-            let eduNotes = [];
-
-            // --- 1. 推定LAP (Naguehの式) & 推定PCWPのダブル算出 ---
-            const lap_nagueh = 4.5 + (1.33 * ee);
-            const lap_pcwp = (1.24 * ee) + 1.9;
-            
-            document.getElementById('lap_nagueh').innerText = lap_nagueh.toFixed(1);
-            document.getElementById('lap_pcwp').innerText = lap_pcwp.toFixed(1);
-            
-            let isLapElevated = (ee >= 15 || lap_nagueh > 12 || lavi >= 34);
-            
-            // Nagueh式のバッジ判定
-            if (ee >= 15 || lap_nagueh > 12) {
-                document.getElementById('lap_nagueh_badge').className = "status-badge bg-danger";
-                document.getElementById('lap_nagueh_badge').innerText = "LAP上昇";
-            } else {
-                document.getElementById('lap_nagueh_badge').className = "status-badge bg-normal";
-                document.getElementById('lap_nagueh_badge').innerText = "正常範囲";
+            if (ava <= 1.0) {
+                txt += `【弁膜症：AS】\nAVA ${ava.toFixed(2)} cm² と高度狭窄を満たし、mean PG ${mpg.toFixed(0)} mmHg から「重症大動脈弁狭窄症（AS）」の血行動態に合致する所見です。\n`;
+            }
+            if (isMS) {
+                txt += `【弁膜症：MS】\nMVA連続式 ${mva.toFixed(1)} cm² であり、重症僧帽弁狭窄症（MS）の指標域を認めます。\n`;
             }
 
-            // PCWPのバッジ判定
-            if (lap_pcwp > 15) {
-                document.getElementById('lap_pcwp_badge').className = "status-badge bg-danger";
-                document.getElementById('lap_pcwp_badge').innerText = "PCWP上昇";
-            } else {
-                document.getElementById('lap_pcwp_badge').className = "status-badge bg-normal";
-                document.getElementById('lap_pcwp_badge').innerText = "正常範囲";
-            }
+            txt += `\n【下大静脈・右房圧判定】\nIVC呼気径 ${ivc.toFixed(1)} mm、呼吸性変動率 ${collapse} % であり、JSE/ASEガイドラインに準拠した推定右房圧（RAP）は ＝ ${rap} mmHg（${rapStatus}）です。`;
 
-            // --- 2. 推定RAP (下大静脈エコー判定) ---
-            let rap = 8; let rapStatusText = "中間値"; let rapBadgeClass = "bg-warning";
-            if (ivc_diam <= 21 && ivc_collapse >= 50) { rap = 3; rapStatusText = "正常域"; rapBadgeClass = "bg-normal"; }
-            else if (ivc_diam > 21 && ivc_collapse < 50) { rap = 15; rapStatusText = "上昇"; rapBadgeClass = "bg-danger"; }
-            
-            document.getElementById('rap_calc').innerText = rap;
-            document.getElementById('rap_badge').className = "status-badge " + rapBadgeClass;
-            document.getElementById('rap_badge').innerText = rapStatusText;
-
-            const isMS = (mva <= 2.0);
-            document.getElementById('ms_lap_alert').style.display = isMS ? "block" : "none";
-
-            // --- 3. 左房形態 ---
-            let la_status = (lavi >= 34) ? "左房拡大（LAVI " + lavi.toFixed(1) + " mL/m²）を認めます。" : "左房サイズ（LAVI " + lavi.toFixed(1) + " mL/m²）は正常です。";
-            if (las < 20) la_status += "LAリザーバストレインは " + las + " %と低下し、コンプライアンス低下を伴います。";
-
-            // --- 4. 左室拡張機能グレード判定 (新設要素連携) ---
-            let ddBadgeText = "", ddBadgeClass = "", ddLogicText = "";
-            if (lvef >= 50 && !isLapElevated && ea > 0.8 && ea < 2.0) {
-                ddBadgeText = "正常"; ddBadgeClass = "bg-normal";
-                ddLogicText = "E/A " + ea.toFixed(2) + "、内圧上昇なし。";
-            } else {
-                if (ea <= 0.8) {
-                    if (isLapElevated) {
-                        ddBadgeText = "Grade II (偽正常化パターン)"; ddBadgeClass = "bg-warning";
-                        ddLogicText = "E/A ≦0.8＋LAP/LAVI上昇負荷あり。";
-                    } else {
-                        ddBadgeText = "Grade I (弛緩障害型)"; ddBadgeClass = "bg-info";
-                        ddLogicText = "E/A ≦0.8 (弛緩遅延優位)。";
-                    }
-                } else if (ea >= 2.0 || dct < 160) {
-                    ddBadgeText = "Grade III (拘束型パターン)"; ddBadgeClass = "bg-danger";
-                    ddLogicText = "E/A ≧2.0 または DcT短縮（" + dct + "ms）。";
-                } else {
-                    if (isLapElevated) {
-                        ddBadgeText = "Grade II (偽正常化パターン)"; ddBadgeClass = "bg-warning";
-                        ddLogicText = "E/A正常範囲＋LAP/LAVI上昇。";
-                    } else {
-                        ddBadgeText = "Grade I (弛緩障害疑い)"; ddBadgeClass = "bg-info";
-                        ddLogicText = "E/A " + ea.toFixed(2) + " 充満圧上昇なし。";
-                    }
-                }
-            }
-            document.getElementById('dd_badge').className = "status-badge " + ddBadgeClass;
-            document.getElementById('dd_badge').innerText = ddBadgeText;
-            document.getElementById('dd_logic').innerText = ddLogicText;
-
-            // --- 5. 心不全フェノタイプ & 各弁膜症判定 ---
-            let hfBadge = (lvef <= 40) ? "HFrEF" : (lvef < 50) ? "HFmrEF" : (isLapElevated || ea >= 2.0) ? "HFpEF疑い" : "正常";
-            let hfClass = (lvef <= 40) ? "bg-danger" : (lvef < 50 || isLapElevated) ? "bg-warning" : "bg-normal";
-            document.getElementById('hf_badge').className = "status-badge " + hfClass;
-            document.getElementById('hf_badge').innerText = hfBadge;
-
-            let asBadge = (ava <= 1.0 && mpg >= 40) ? "High-gradient 重症AS" : (ava <= 1.0 && mpg < 40) ? "Low-gradient 重症AS" : (ava <= 1.5) ? "中等度 AS" : "ASなし";
-            let asClass = (ava <= 1.0) ? "bg-danger" : (ava <= 1.5) ? "bg-info" : "bg-normal";
-            document.getElementById('as_badge').className = "status-badge " + asClass;
-            document.getElementById('as_badge').innerText = asBadge;
-
-            let msBadge = (mva > 2.0) ? "狭窄なし" : (mva > 1.5 ? "中等度 MS" : "重症 MS");
-            let msClass = (mva <= 1.5) ? "bg-danger" : (mva <= 2.0 ? "bg-info" : "bg-normal");
-            document.getElementById('ms_badge').className = "status-badge " + msClass;
-            document.getElementById('ms_badge').innerText = msBadge;
-
-            // === テンプレートテキスト合成 ===
-            if (lvef <= 40) {
-                finalTemplate += "左室壁運動はびまん性に高度低下しており（LVEF " + lvef + " %）、収縮不全（HFrEF）の所見です。\n";
-            } else {
-                finalTemplate += "左室収縮能は LVEF " + lvef + " % と保持されています（Simpson法）。\n";
-            }
-            
-            let msLapWarningText = isMS ? "（※ただし僧帽弁狭窄合併のため公式推定値は参考値）" : "";
-            finalTemplate += "左室充満圧の多角的指標として、算出E/A比は " + ea.toFixed(2) + "、算出E/e'比は " + ee.toFixed(1) + "（DcT: " + dct + " ms）です。\n";
-            finalTemplate += " ・Naguehの式による推定 LAP ＝ " + lap_nagueh.toFixed(1) + " mmHg " + msLapWarningText + "\n";
-            finalTemplate += " ・肺動脈楔入圧基準による推定 PCWP ＝ " + lap_pcwp.toFixed(1) + " mmHg " + msLapWarningText + "\n";
-            finalTemplate += "拡張機能グレードは「" + ddBadgeText + "」の動態を呈しています。\n";
-            
-            finalTemplate += la_status + "\n";
-
-            if (ava <= 1.0 && mpg >= 40) {
-                finalTemplate += "大動脈弁領域では、AVA " + ava.toFixed(2) + " cm² と重度狭窄を呈しており、mean PG " + mpg + " mmHg と著しい圧較差の上昇を伴う「High-gradient 重症AS」の指標を満たします。\n";
-            } else if (ava <= 1.0 && mpg < 40) {
-                finalTemplate += "AVA " + ava.toFixed(2) + " cm² と重度狭窄ですが、mean PG " + mpg + " mmHg と低圧較差です。低流量低圧較差重症ASの可能性を考慮します。\n";
-            } else if (ava > 1.0 && ava <= 1.5) {
-                finalTemplate += "大動脈弁に肥厚・石灰化を認め、mean PG " + mpg + " mmHg、AVA " + ava.toFixed(2) + " cm² と中等度ASの所見です。\n";
-            }
-
-            if (mva <= 2.0) {
-                finalTemplate += "僧帽弁領域では、MVA（連続式）" + mva.toFixed(1) + " cm² の狭窄変化（" + msBadge + "域）を認めます。\n";
-            }
-
-            finalTemplate += "下大静脈（IVC）は呼気径 " + ivc_diam.toFixed(1) + " mm、呼吸性変動率 " + ivc_collapse + " % であり、ガイドラインに基づく推定右房圧（RAP）は " + rap + " mmHg（" + rapStatusText + "）と判定されます。";
-
-            document.getElementById('template_output').innerText = finalTemplate.trim();
-            
-            // --- 解説RAGロジックの構築 ---
-            if (ee > 14 || lap_nagueh > 12) eduNotes.push("E/e'（" + ee.toFixed(1) + "）ならびにNagueh式LAP（" + lap_nagueh.toFixed(1) + " mmHg）がガイドラインカットオフを超えており、左室充満圧の確実な上昇を裏付けます。");
-            if (ava <= 1.0 && mpg >= 40) eduNotes.push("AVA ≦ 1.0 cm² かつ mean PG ≧ 40 mmHg を完全に満たす典型的な『High-gradient 重症AS』です。");
-            if (isMS) eduNotes.push("※注意ピットフォール: 僧帽弁狭窄症（MVA ≦ 2.0 cm²）が存在するため、左房圧・二尖弁の圧較差負荷が交絡し、E/e'公式によるLAP/PCWP推定は本来の充満圧を反映しない（過小評価等のピットフォール）リスクに留意してください。");
-            
-            if(eduNotes.length === 0) eduNotes.push("すべての主要な血行動態パラメータは正常範囲内です。");
-            document.getElementById('edu_logic').innerHTML = "<ul><li style='margin-bottom:4px;'>" + eduNotes.join("</li><li style='margin-bottom:4px;'>") + "</li></ul>";
+            document.getElementById('integrated_text_area').style.display = "block";
+            document.getElementById('integrated_output').innerText = txt;
         }
 
-        function resetToNormalData() {
-            document.getElementById('lvef').value = 60;
-            document.getElementById('e_wave').value = 0.80;
-            document.getElementById('a_wave').value = 0.67;
-            document.getElementById('e_prime').value = 10.0;
-            document.getElementById('dct').value = 200;
+        function clearJsonFilter() {
+            targetCardIds = null;
+            document.getElementById('json_input').value = "";
+            filterBadge.style.display = "none";
+            document.getElementById('integrated_text_area').style.display = "none";
             
-            document.getElementById('lavi').value = 24.0;
-            document.getElementById('las').value = 35;
-            document.getElementById('ava').value = 2.00;
-            document.getElementById('mpg').value = 10;
-            document.getElementById('mva').value = 3.0;
-            document.getElementById('ivc_diam').value = 15.0;
-            document.getElementById('ivc_collapse').value = 60;
-            calculateReasoning();
-        }
-        
-        function copyToClipboard() {
-            const text = document.getElementById('template_output').innerText;
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text).then(() => {
-                    alert("所見テキストをコピーしました！");
-                }).catch(err => {
-                    fallbackCopy(text);
-                });
-            } else {
-                fallbackCopy(text);
-            }
+            // 表示リセット
+            document.getElementById('lap_nagueh_calc').innerText = "---";
+            document.getElementById('lap_pcwp_calc').innerText = "---";
+            document.getElementById('rap_calc').innerText = "---";
+            document.getElementById('lap_nagueh_badge').className = "status-badge bg-info";
+            document.getElementById('lap_nagueh_badge').innerText = "未解析";
+            document.getElementById('lap_pcwp_badge').className = "status-badge bg-info";
+            document.getElementById('lap_pcwp_badge').innerText = "未解析";
+            document.getElementById('rap_badge').className = "status-badge bg-info";
+            document.getElementById('rap_badge').innerText = "未解析";
+
+            resetSidebarActiveState();
+            renderCards();
         }
 
-        function fallbackCopy(text) {
-            var textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.top = "0"; textArea.style.left = "0"; textArea.style.position = "fixed";
-            document.body.appendChild(textArea);
-            textArea.focus(); textArea.select();
-            try {
-                var successful = document.execCommand('copy');
-                if (successful) alert("所見テキストをコピーしました！");
-                else alert("コピーに失敗しました。");
-            } catch (err) {
-                alert("お使いのブラウザではコピーが許可されていません。");
-            }
-            document.body.removeChild(textArea);
+        function resetSidebarActiveState() {
+            document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+            document.getElementById("cat-all").classList.add("active");
+            document.getElementById("tag-all").classList.add("active");
+            currentCategory = "all";
+            currentTag = "all";
         }
-        
-        resetToNormalData();
+
+        function copyText(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => { alert("クリップボードにコピーしました！"); });
+        }
+
+        function copyIntegratedText() {
+            const text = document.getElementById('integrated_output').innerText;
+            navigator.clipboard.writeText(text).then(() => { alert("自動合成レポートテキストをコピーしました！"); });
+        }
+
+        searchInput.addEventListener("input", (e) => {
+            currentSearch = e.target.value;
+            renderCards();
+        });
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const filterType = e.target.getAttribute("data-filter");
+                const filterVal = e.target.getAttribute("data-val");
+                document.querySelectorAll(`.filter-btn[data-filter="${filterType}"]`).forEach(b => b.classList.remove("active"));
+                e.target.classList.add("active");
+                if (filterType === "category") currentCategory = filterVal;
+                if (filterType === "tag") currentTag = filterVal;
+                renderCards();
+            });
+        });
+
+        renderCards();
     </script>
 </body>
 </html>
-
-```
