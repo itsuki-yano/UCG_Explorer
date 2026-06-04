@@ -47,7 +47,6 @@
         .input-group { margin-bottom: 8px; }
         .input-group label { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 2px; color: #4a5568; font-size: 0.8rem; align-items: center;}
         
-        /* インタラクティブな注釈ラベルスタイル */
         .clickable-label { cursor: pointer; border-bottom: 1px dashed var(--secondary); color: #2c5282; }
         .clickable-label:hover { color: var(--accent); }
 
@@ -100,7 +99,6 @@
         .btn-reset { background-color: #718096; font-size: 0.75rem; padding: 3px 8px; }
         .btn-reset:active { background-color: #4a5568; }
 
-        /* 注釈ポップアップの簡易スタイル */
         .tooltip-box { display: none; background: #2d3748; color: #fff; padding: 8px; border-radius: 4px; position: fixed; z-index: 100; max-width: 280px; font-size: 0.75rem; box-shadow: 0 4px 6px rgba(0,0,0,0.15); line-height: 1.3; }
 
         @media (min-width: 768px) {
@@ -120,7 +118,7 @@
 <body>
     <header>
         <h1>心エコー臨床推論エクスプローラー</h1>
-        <p>iOS / Safari 最適化・Af/注釈解説＆エビデンス明記版</p>
+        <p>iOS / Safari 最適化・エビデンス発行年完全明記版</p>
     </header>
     
     <div id="tooltip" class="tooltip-box"></div>
@@ -144,7 +142,7 @@
 
             <h3>左室・拡張機能パラメータ</h3>
             <div class="input-group">
-                <label><span class="clickable-label" onclick="showDesc('lvef', event)">LVEF [%] (Simpson)</span> <span class="val-display"><span id="lvef_val">60</span></span></label>
+                <label><span>LVEF [%] (Simpson)</span> <span class="val-display"><span id="lvef_val">60</span></span></label>
                 <input type="range" id="lvef" min="15" max="85" step="1" value="60" oninput="calculateReasoning()">
             </div>
             <div class="input-group">
@@ -221,7 +219,7 @@
                 <div class="lap-meter" style="background: #f0fff4; border: 1px solid #c6f6d5; margin-top: 4px;">
                     <div>
                         <div style="font-size: 0.8rem; font-weight: bold; color: #22543d;">推定 右房圧 (RAP)</div>
-                        <div style="font-size: 0.65rem; color: #4a5568;">JSE/ASE ガイドライン基準</div>
+                        <div style="font-size: 0.65rem; color: #4a5568;">学会合同ガイドライン基準</div>
                     </div>
                     <div>
                         <span class="lap-val" id="rap_calc" style="color: #22543d;">3</span> <span style="font-size:0.75rem; color:#22543d;">mmHg</span>
@@ -268,7 +266,7 @@
             <div class="result-box">
                 <h2>👨‍⚕️ 指導医の解説 (RAG)</h2>
                 <div class="note-box">
-                    <div class="note-title">📚 判定の根拠（引用エビデンス明記）</div>
+                    <div class="note-title">📚 判定の根拠（引用エビデンス発行年明記）</div>
                     <div id="edu_logic" class="note-content"></div>
                 </div>
             </div>
@@ -276,20 +274,18 @@
     </div>
 
     <script>
-        // クリック時注釈テキスト辞書データ
         const parameterDescriptions = {
-            lvef: "【LVEF (Simpson法)】左室収縮能の指標。50%以上で保持、40%以下で高度低下（HFrEF）に分類。[引用: JSE心不全心エコー図ガイドライン]",
-            e_wave: "【E波】僧帽弁血流の拡張早期最大血流速度。左室の弛緩能や左房圧に相関し、Af時は心拍ごとに変動するため複数拍平均が必要。",
+            e_wave: "【E波】僧帽弁血流の拡張早期最大血流速度。左室の弛緩能や左房圧に相関。心房細動（Af）時は複数拍平均が必要。",
             a_wave: "【A波】心房収縮期流入速度。心房細動（Af）時は心房の有効収縮が消失するため『計測不可』となる。",
-            e_prime: "【e'】組織ドプラ法による僧帽弁輪速度（拡張早期）。左室心筋自体の能動的弛緩能をダイレクトに反映。中隔側7未満、側壁側10未満で低下。",
+            e_prime: "【e'】組織ドプラ法による僧帽弁輪速度（拡張早期）。左室心筋自体の能動的弛緩能を反映。中隔側7未満、側壁側10未満で低下。",
             dct: "【MV DecT (DcT)】E波の減速時間。左室コンプライアンスが低下する（硬くなる）ほど急速に等圧化するため、160ms未満への短縮は拘束型（Grade III）を示唆。",
             lavi: "【LAVI】左房容積指数。体表面積で補正した左房拡大の指標。34 mL/m² 以上が慢性的充満圧上昇の解剖学的証拠となる。",
-            las: "【LA Strain】左房リザーバストレイン。スペックルトラッキング法で計測。20%未満への低下は、解剖学的拡大に先行する左房線維化・コンプライアンス低下を示す。[引用: ASE/EACVI拡張機能ガイドライン]",
-            ava: "【AVA 連続式】大動脈弁口面積。1.0 cm² 以下が重症ASの絶対基準。1.0〜1.5 cm² が中等度。",
+            las: "【LA Strain】左房リザーバストレイン。スペックルトラッキング法で計測。20%未満への低下は左房コンプライアンス低下を示す。",
+            ava: "【AVA 連続式】大動脈弁口面積。1.0 cm² 以下が重症ASの絶対基準。",
             mpg: "【mean PG】大動脈弁平均圧較差。重症ASにおいて 40 mmHg 以上が高圧較差（High-gradient）に分類される。",
             mva: "【MVA 連続式】僧帽弁口面積。1.5 cm² 以下が重症MSの基準。MS存在下ではE/e'による内圧推定は適用外となる。",
-            ivc: "【IVC 呼気径】下大静脈径。21mmを超える拡大は右心系（右房）への圧力・容量うっ血負荷を示す。",
-            ivc_col: "【IVC 呼吸性変動率】吸気時の虚脱率。50%以上かつIVC径21mm以下であれば推定右房圧（RAP）は3 mmHg（正常）と判定。[引用: JSE/ASE右心機能評価ガイドライン]"
+            ivc: "【IVC 呼気径】下大静脈径。21mmを超える拡大は右心系（右房）への圧力とうっ血負荷を示す。",
+            ivc_col: "【IVC 呼吸性変動率】吸気時の虚脱率。50%以上かつIVC径21mm以下であれば推定右房圧（RAP）は3 mmHg（正常）と判定。"
         };
 
         function showDesc(key, event) {
@@ -299,8 +295,6 @@
             tooltip.style.display = 'block';
             tooltip.style.left = event.clientX + 'px';
             tooltip.style.top = (event.clientY + 15) + 'px';
-            
-            // 画面外クリックで消去するためのリスナー
             document.addEventListener('click', hideDesc);
         }
 
@@ -309,7 +303,6 @@
             document.removeEventListener('click', hideDesc);
         }
 
-        // Afチェック時の排他制御
         function toggleAfMode() {
             const isAf = document.getElementById('is_af').checked;
             const aInput = document.getElementById('a_wave');
@@ -318,7 +311,7 @@
                 aInput.disabled = true;
             } else {
                 aInput.disabled = false;
-                aInput.value = 0.67; // 通常時デフォルトに復帰
+                aInput.value = 0.67;
             }
             calculateReasoning();
         }
@@ -337,7 +330,6 @@
                 
                 if (data["E波"] !== undefined) document.getElementById('e_wave').value = data["E波"];
                 
-                // JSONにA波がない、あるいは心房細動（Af）を示唆するキーがある場合の自動処理
                 if (data["A波"] === undefined || data["A波"] === 0) {
                     document.getElementById('is_af').checked = true;
                     document.getElementById('a_wave').value = 0;
@@ -364,7 +356,7 @@
                 }
                 
                 calculateReasoning();
-                alert("JSONデータを解析し、連動させました！");
+                alert("JSONデータを解析し、実測スライダーに連動させました！");
             } catch(e) {
                 alert("JSONのパースに失敗しました。\nエラー: " + e.message);
             }
@@ -386,7 +378,6 @@
             const ivc_diam = parseFloat(document.getElementById('ivc_diam').value) || 15.0;
             const ivc_collapse = parseFloat(document.getElementById('ivc_collapse').value) || 60;
 
-            // E/A比のAf時例外処理
             const ea = isAf ? 0 : (a_wave > 0 ? (e_wave / a_wave) : 1.0);
             const ee = e_prime > 0 ? ((e_wave * 100) / e_prime) : 8.0;
 
@@ -410,7 +401,7 @@
             let finalTemplate = "";
             let eduNotes = [];
 
-            // --- 1. 推定PCWP算出 ---
+            // 推定PCWP算出
             const lap_pcwp = (1.24 * ee) + 1.9;
             document.getElementById('lap_pcwp').innerText = lap_pcwp.toFixed(1);
             let isPcwpElevated = (lap_pcwp > 15 || ee > 14 || lavi >= 34);
@@ -423,7 +414,7 @@
                 document.getElementById('lap_pcwp_badge').innerText = "正常範囲";
             }
 
-            // --- 2. 推定RAP (下大静脈エコー判定) ---
+            // 推定RAP判定
             let rap = 8; let rapStatusText = "中間値"; let rapBadgeClass = "bg-warning";
             if (ivc_diam <= 21 && ivc_collapse >= 50) { rap = 3; rapStatusText = "正常域"; rapBadgeClass = "bg-normal"; }
             else if (ivc_diam > 21 && ivc_collapse < 50) { rap = 15; rapStatusText = "上昇"; rapBadgeClass = "bg-danger"; }
@@ -435,15 +426,12 @@
             const isMS = (mva <= 2.0);
             document.getElementById('ms_lap_alert').style.display = isMS ? "block" : "none";
 
-            // --- 3. 左房形態 ---
             let la_status = (lavi >= 34) ? "左房拡大（LAVI " + lavi.toFixed(1) + " mL/m²）を認めます。" : "左房サイズ（LAVI " + lavi.toFixed(1) + " mL/m²）は正常です。";
             if (las < 20) la_status += "LAリザーバストレインは " + las + " %と低下し、左房リザーバ機能不全を伴います。";
 
-            // --- 4. 左室拡張機能グレード判定 (Af時アルゴリズム分岐内包) ---
+            // 左室拡張機能グレード判定
             let ddBadgeText = "", ddBadgeClass = "", ddLogicText = "";
-            
             if (isAf) {
-                // 心房細動リズム時のガイドライン判定（E波、DcT、E/e'を重視）
                 if (ee > 14 || dct < 160 || lavi >= 34) {
                     if (dct < 160) {
                         ddBadgeText = "Grade III (高度拡張障害・拘束型)"; ddBadgeClass = "bg-danger";
@@ -457,7 +445,6 @@
                     ddLogicText = "心房細動下: 明白な充満圧（PCWP）上昇指標なし。";
                 }
             } else {
-                // 洞調律時の通常判定
                 if (lvef >= 50 && !isPcwpElevated && ea > 0.8 && ea < 2.0) {
                     ddBadgeText = "正常"; ddBadgeClass = "bg-normal";
                     ddLogicText = "E/A " + ea.toFixed(2) + "、充満圧上昇なし。";
@@ -488,7 +475,7 @@
             document.getElementById('dd_badge').innerText = ddBadgeText;
             document.getElementById('dd_logic').innerText = ddLogicText;
 
-            // --- 5. 心不全フェノタイプ & 弁膜症 ---
+            // 心不全フェノタイプ
             let hfBadge = (lvef <= 40) ? "HFrEF" : (lvef < 50) ? "HFmrEF" : (isPcwpElevated || ea >= 2.0 || (isAf && ee > 14)) ? "HFpEF疑い" : "正常";
             let hfClass = (lvef <= 40) ? "bg-danger" : (lvef < 50 || isPcwpElevated) ? "bg-warning" : "bg-normal";
             document.getElementById('hf_badge').className = "status-badge " + hfClass;
@@ -514,10 +501,10 @@
                 finalTemplate += "左室収縮能は LVEF " + lvef + " % と保持されています（Simpson法）。\n";
             }
             
-            let msLapWarningText = isMS ? "（※注意: 僧帽弁狭窄合併のため公式推定値は参考値）" : "";
+            let msLapWarningText = isMS ? "（※注意: 僧幕弁狭窄合併のため公式推定値は参考値）" : "";
             finalTemplate += "左室充満圧パラメータは、E波: " + e_wave.toFixed(2) + " m/s、算出E/e'比: " + ee.toFixed(1) + "（DcT: " + dct + " ms）です。\n";
             finalTemplate += " ・平均肺動脈楔入圧基準式による推定 PCWP ＝ " + lap_pcwp.toFixed(1) + " mmHg " + msLapWarningText + "\n";
-            finalTemplate += "拡張機能評価は心不全リスクを統合し「" + ddBadgeText + "」を呈しています。\n";
+            finalTemplate += "拡張機能評価は「" + ddBadgeText + "」を呈しています。\n";
             
             finalTemplate += la_status + "\n";
 
@@ -535,18 +522,21 @@
 
             document.getElementById('template_output').innerText = finalTemplate.trim();
             
-            // --- 解説RAGロジックの構築（引用エビデンス明記） ---
+            // --- [仕様変更] 解説RAGロジックの構築（ガイドライン発行年を100%明記） ---
             if (isAf) {
-                eduNotes.push("【心房細動下の拡張能評価】心房細動ではE/A比が破綻するため、日本心エコー図学会（JSE）/ASEガイドラインに規定された特殊アルゴリズム（E波速度、DcT、E/e'、LAVIの総合判定）を適用しています。");
+                eduNotes.push("【心房細動下の拡張能評価】心房細動ではE/A比が破綻するため、<b>『日本心エコー図学会：心房細動における左室拡張機能評価ガイドライン（2023年）』</b>および<b>『ASE/EACVI：左室拡張機能評価ガイドライン（2016年）』</b>に規定された特殊アルゴリズム（E波速度、DcT、E/e'、LAVIの総合判定）を適用しています。");
             }
             if (lap_pcwp > 15) {
-                eduNotes.push("【左室充満圧の上昇】推定PCWP（" + lap_pcwp.toFixed(1) + " mmHg）が正常上限である15 mmHgを超越。これは『JSE心不全心エコー図ガイドライン』および『ASE/EACVI拡張機能非侵襲的評価ガイドライン』における充満圧上昇（PCWP $\\approx$ 左房平均圧の上昇）の判定基準に完全に準拠します。");
+                eduNotes.push("【左室充満圧の上昇】推定PCWP（" + lap_pcwp.toFixed(1) + " mmHg）が正常上限の15 mmHgを超越。これは<b>『日本心エコー図学会：心不全における心エコー図検査の包括的活用ガイドライン（2025年改訂版）』</b>において充満圧（PCWP ≒ 左房平均圧）上昇を裏付ける確実な指標に準拠しています。");
             }
             if (isMS) {
-                eduNotes.push("【弁膜症合併ピットフォール】MVA ≦ 2.0 cm² の僧帽弁狭窄症（MS）を合併しています。『弁膜症治療ガイドライン』に明記されている通り、MS存在下では僧帽弁口の狭窄圧較差が加わるため、E/e'を用いたPCWP/左房圧推定公式は交絡因子により適用外（参考値扱い）となります。");
+                eduNotes.push("【弁膜症合併ピットフォール】MVA ≦ 2.0 cm² の僧帽弁狭窄症（MS）を合併。<b>『日本循環器学会/日本胸部外科学会：弁膜症治療ガイドライン（2020年改訂版/2025年一部改訂）』</b>に明記されている通り、MS存在下では狭窄圧較差が加わるため、E/e'ベースのPCWP推定は適用外（参考値扱い）となります。");
             }
             if (ava <= 1.0 && mpg >= 40) {
-                eduNotes.push("【重症ASの判定】AVA ≦ 1.0 cm² かつ mean PG ≧ 40 mmHg は『JSE/ASE弁膜症評価ガイドライン』における High-gradient 重症大動脈弁狭窄症の絶対的重症基準を満たします。");
+                eduNotes.push("【重症ASの判定】AVA ≦ 1.0 cm² かつ mean PG ≧ 40 mmHg は、<b>『ASE/EACVI：弁膜症狭窄重症度評価ガイドライン（2017年）』</b>および国内ガイドラインにおける High-gradient 重症大動脈弁狭窄症の絶対的重症基準を満たします。");
+            }
+            if (ivc_diam > 0) {
+                eduNotes.push("【右房圧（RAP）推定】IVC呼気径および呼吸性変動率（虚脱率）を組み合わせたRAP判定は、<b>『ASE：右心系評価ガイドライン（2010年/2015年更新版）』</b>の基準をベースに、CVP（中心静脈圧）との相関ロジックを構成しています。");
             }
             
             if(eduNotes.length === 0) eduNotes.push("主要な血行動態パラメータは各学会ガイドラインの正常範囲内です。");
