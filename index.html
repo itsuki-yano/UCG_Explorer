@@ -15,97 +15,91 @@
             --text-main: #2d3748;
             --border: #e2e8f0;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif; }
-        body { background-color: var(--bg-body); color: var(--text-main); padding: 8px; -webkit-text-size-adjust: 100%; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-main); padding: 4px; -webkit-text-size-adjust: 100%; }
         
-        header { background-color: var(--primary); color: white; padding: 8px; border-radius: 6px; margin-bottom: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        header h1 { font-size: 1.1rem; line-height: 1.2; }
-        header p { font-size: 0.75rem; color: #cbd5e0; }
+        header { background-color: var(--primary); color: white; padding: 6px; border-radius: 4px; margin-bottom: 6px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        header h1 { font-size: 1rem; line-height: 1.2; }
+        header p { font-size: 0.7rem; color: #cbd5e0; }
         
-        .container { display: flex; flex-wrap: wrap; gap: 8px; max-width: 1500px; margin: 0 auto; }
+        /* 縦並びを基本（モバイル優先）とする構造に変更 */
+        .container { display: flex; flex-direction: column; gap: 6px; max-width: 100%; margin: 0 auto; }
         
-        .left-panel { 
-            flex: 1 1 350px; 
-            background: var(--bg-panel); 
-            padding: 12px; 
-            border-radius: 6px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
-            border-top: 3px solid var(--secondary); 
-            position: sticky; 
-            top: 8px;
-            max-height: 92vh;
-            overflow-y: auto;
-        }
+        .left-panel, .right-panel { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+        .left-panel { background: var(--bg-panel); padding: 10px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-top: 3px solid var(--secondary); }
+        .result-box { background: var(--bg-panel); padding: 10px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         
-        .right-panel { flex: 2 1 500px; display: flex; flex-direction: column; gap: 8px; }
-        .result-box { background: var(--bg-panel); padding: 12px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        
-        h2 { font-size: 0.95rem; color: var(--primary); margin-bottom: 8px; border-bottom: 2px solid var(--border); padding-bottom: 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 5px;}
-        h3 { font-size: 0.85rem; color: #4a5568; margin-bottom: 6px; margin-top: 10px; padding-left: 6px; border-left: 3px solid var(--secondary); background: #f7fafc; padding-top: 2px; padding-bottom: 2px; border-radius: 0 4px 4px 0;}
+        h2 { font-size: 0.9rem; color: var(--primary); margin-bottom: 6px; border-bottom: 1px solid var(--border); padding-bottom: 2px; display: flex; justify-content: space-between; align-items: center; }
+        h3 { font-size: 0.8rem; color: #4a5568; margin-bottom: 4px; margin-top: 6px; padding: 2px 4px; border-left: 3px solid var(--secondary); background: #f7fafc; border-radius: 0 2px 2px 0;}
         h3:first-child { margin-top: 0; }
         
-        .input-group { margin-bottom: 8px; }
-        .input-group label { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 2px; color: #4a5568; font-size: 0.8rem; align-items: center;}
+        .input-group { margin-bottom: 6px; }
+        .input-group label { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 1px; color: #4a5568; font-size: 0.75rem; align-items: center;}
         
         .clickable-label { cursor: pointer; border-bottom: 1px dashed var(--secondary); color: #2c5282; }
-        .clickable-label:hover { color: var(--accent); }
-
-        .val-display { color: var(--secondary); font-size: 1.05em; background: #edf2f7; padding: 1px 6px; border-radius: 4px;}
+        .val-display { color: var(--secondary); font-size: 0.95em; background: #edf2f7; padding: 1px 4px; border-radius: 3px;}
         
-        .json-area { width: 100%; height: 60px; font-family: monospace; font-size: 0.75rem; padding: 6px; border: 1px solid var(--border); border-radius: 4px; resize: vertical; margin-bottom: 6px; background: #fcfcfc; }
+        .json-area { width: 100%; height: 50px; font-family: monospace; font-size: 0.7rem; padding: 4px; border: 1px solid var(--border); border-radius: 4px; resize: vertical; background: #fcfcfc; }
 
+        /* iPhoneの指操作に最適化しつつ高さを抑えたスライダー */
         input[type="range"] { 
-            -webkit-appearance: none;
-            appearance: none;
-            width: 100%; 
-            height: 10px; 
-            background: #e2e8f0; 
-            border-radius: 5px; 
-            outline: none; 
-            margin-top: 3px;
-            margin-bottom: 3px;
+            -webkit-appearance: none; appearance: none; width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; outline: none; margin-top: 2px; margin-bottom: 2px; 
         }
         input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--secondary);
-            cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--secondary); cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
-        input[type="range"]:disabled { opacity: 0.4; cursor: not-allowed; }
         
-        .status-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-weight: bold; color: white; font-size: 0.75rem; margin-bottom: 4px; }
+        .status-badge { display: inline-block; padding: 1px 6px; border-radius: 10px; font-weight: bold; color: white; font-size: 0.7rem; margin-bottom: 2px; }
         .bg-normal { background-color: #48bb78; } .bg-warning { background-color: #ed8936; } .bg-danger { background-color: #e53e3e; } .bg-info { background-color: #4299e1; }
         
-        .judgement-item { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border); }
+        .judgement-item { margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px dashed var(--border); }
         .judgement-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        .judgement-item > div:first-child { font-weight: bold; margin-bottom: 2px; font-size: 0.85rem;}
+        .judgement-item > div:first-child { font-weight: bold; margin-bottom: 1px; font-size: 0.75rem;}
         
-        .template-text { background-color: #f8fafc; padding: 10px; font-family: monospace; font-size: 0.85rem; line-height: 1.4; white-space: pre-wrap; color: #2d3748; border: 1px solid #e2e8f0; border-left: 3px solid var(--secondary); }
-        .note-box { background-color: #fffaf0; border: 1px solid #feebc8; padding: 10px; border-radius: 4px; }
-        .note-title { color: #dd6b20; font-weight: bold; margin-bottom: 4px; font-size: 0.8rem; }
-        .note-content { font-size: 0.8rem; color: #7b341e; margin-bottom: 0; line-height: 1.4; }
-        .alert-box { background-color: #fff5f5; border-left: 3px solid #e53e3e; padding: 6px; font-size: 0.8rem; color: #c53030; margin-top: 6px; border-radius: 4px;}
+        .template-text { background-color: #f8fafc; padding: 8px; font-family: monospace; font-size: 0.75rem; line-height: 1.3; white-space: pre-wrap; color: #2d3748; border: 1px solid #e2e8f0; border-left: 3px solid var(--secondary); }
+        .note-box { background-color: #fffaf0; border: 1px solid #feebc8; padding: 8px; border-radius: 4px; }
+        .note-title { color: #dd6b20; font-weight: bold; margin-bottom: 2px; font-size: 0.75rem; }
+        .note-content { font-size: 0.75rem; color: #7b341e; margin-bottom: 0; line-height: 1.3; }
+        .alert-box { background-color: #fff5f5; border-left: 3px solid #e53e3e; padding: 4px; font-size: 0.75rem; color: #c53030; margin-top: 4px; border-radius: 4px;}
         
-        .lap-meter { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; background: #ebf8ff; padding: 8px; border-radius: 4px; border: 1px solid #bee3f8;}
-        .lap-val { font-size: 1.25rem; font-weight: bold; color: #2b6cb0; text-align: right;}
+        .lap-meter { display: flex; align-items: center; justify-content: space-between; gap: 4px; margin-top: 4px; background: #ebf8ff; padding: 6px; border-radius: 4px; border: 1px solid #bee3f8;}
+        .lap-val { font-size: 1.1rem; font-weight: bold; color: #2b6cb0; text-align: right;}
         
-        .btn { padding: 6px 12px; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: background 0.2s; -webkit-tap-highlight-color: transparent;}
-        .btn-primary { background-color: var(--secondary); width: 100%; margin-top: 6px; display: block;}
-        .btn-primary:active { background-color: #1a365d; }
-        .btn-reset { background-color: #718096; font-size: 0.75rem; padding: 3px 8px; }
-        .btn-reset:active { background-color: #4a5568; }
+        .btn { padding: 4px 10px; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; -webkit-tap-highlight-color: transparent;}
+        .btn-primary { background-color: var(--secondary); width: 100%; margin-top: 4px; display: block;}
+        .btn-reset { background-color: #718096; font-size: 0.7rem; padding: 2px 6px; }
 
-        .tooltip-box { display: none; background: #2d3748; color: #fff; padding: 8px; border-radius: 4px; position: fixed; z-index: 100; max-width: 280px; font-size: 0.75rem; box-shadow: 0 4px 6px rgba(0,0,0,0.15); line-height: 1.3; }
+        .tooltip-box { display: none; background: #2d3748; color: #fff; padding: 6px; border-radius: 4px; position: fixed; z-index: 100; max-width: 240px; font-size: 0.7rem; box-shadow: 0 2px 4px rgba(0,0,0,0.15); line-height: 1.3; }
+
+        /* PC等、大画面ディスプレイ用の2カラム切り替え指定 */
+        @media (min-width: 768px) {
+            body { padding: 8px; }
+            header { padding: 8px; margin-bottom: 8px; }
+            header h1 { font-size: 1.1rem; }
+            .container { flex-direction: row; gap: 8px; }
+            .left-panel { flex: 1 1 350px; position: sticky; top: 8px; max-height: 92vh; overflow-y: auto; padding: 12px; }
+            .right-panel { flex: 2 1 500px; gap: 8px; }
+            .result-box { padding: 12px; }
+            h2 { font-size: 0.95rem; margin-bottom: 8px; padding-bottom: 4px; }
+            h3 { font-size: 0.85rem; margin-bottom: 6px; margin-top: 10px; padding: 2px 6px; }
+            .input-group { margin-bottom: 8px; }
+            .input-group label { font-size: 0.8rem; margin-bottom: 2px; }
+            input[type="range"] { height: 10px; margin-top: 3px; margin-bottom: 3px; }
+            input[type="range"]::-webkit-slider-thumb { width: 20px; height: 20px; }
+            .status-badge { font-size: 0.75rem; padding: 2px 8px; margin-bottom: 4px; }
+            .judgement-item > div:first-child { font-size: 0.85rem; margin-bottom: 2px; }
+            .template-text { padding: 10px; font-size: 0.85rem; }
+            .lap-meter { padding: 8px; margin-top: 6px; }
+            .lap-val { font-size: 1.25rem; }
+            .btn { padding: 6px 12px; font-size: 0.8rem; }
+            .btn-primary { width: auto; margin-top: 0; display: inline-block;}
+        }
     </style>
 </head>
 <body>
     <header>
         <h1>心エコー臨床推論エクスプローラー</h1>
-        <p>iOS / Safari 最適化・高密度RAWデータ解析版</p>
+        <p>iPhone UI最適化・高密度レスポンシブ版</p>
     </header>
     
     <div id="tooltip" class="tooltip-box"></div>
@@ -113,17 +107,17 @@
     <div class="container">
         <div class="left-panel">
             <h2><span>📋 RAWデータ読み込み</span></h2>
-            <div style="margin-bottom: 8px; margin-top: 3px;">
-                <textarea id="json_input" class="json-area" placeholder="ここにエコーのJSONデータを貼り付けてください..."></textarea>
-                <button class="btn btn-primary" style="margin-top:0; margin-bottom:4px;" onclick="parseJsonInput()">JSONデータをパースして反映</button>
+            <div style="margin-bottom: 6px; margin-top: 2px;">
+                <textarea id="json_input" class="json-area" placeholder="ここにエコーのJSONデータを貼り付け..."></textarea>
+                <button class="btn btn-primary" style="margin-top:0; margin-bottom:2px;" onclick="parseJsonInput()">JSONを反映</button>
             </div>
 
-            <h2><span>📊 数値入力・微調整</span> <button class="btn btn-reset" onclick="resetToNormalData()">正常値リセット</button></h2>
+            <h2><span>📊 数値入力・微調整</span> <button class="btn btn-reset" onclick="resetToNormalData()">リセット</button></h2>
             
-            <div class="input-group" style="background: #fffaf0; padding: 6px; border: 1px solid #feebc8; border-radius: 4px;">
-                <label style="cursor: pointer; justify-content: flex-start; gap: 8px; margin-bottom: 0;">
-                    <input type="checkbox" id="is_af" onchange="toggleAfMode()" style="transform: scale(1.2);"> 
-                    <span style="color: #dd6b20; font-weight: bold; font-size: 0.85rem;">心房細動（Af）リズム：A波計測不可</span>
+            <div class="input-group" style="background: #fffaf0; padding: 4px; border: 1px solid #feebc8; border-radius: 4px;">
+                <label style="cursor: pointer; justify-content: flex-start; gap: 6px; margin-bottom: 0;">
+                    <input type="checkbox" id="is_af" onchange="toggleAfMode()" style="transform: scale(1.1);"> 
+                    <span style="color: #dd6b20; font-weight: bold; font-size: 0.75rem;">心房細動（Af）リズム：A波計測不可</span>
                 </label>
             </div>
 
@@ -140,7 +134,7 @@
                 <label><span class="clickable-label" onclick="showDesc('a_wave', event)">A波 [m/s]</span> <span class="val-display"><span id="a_wave_val">0.67</span></span></label>
                 <input type="range" id="a_wave" min="0.00" max="2.00" step="0.01" value="0.67" oninput="calculateReasoning()">
             </div>
-            <div class="input-group" style="background: #ebf8ff; padding: 4px; border-radius: 4px;">
+            <div class="input-group" style="background: #ebf8ff; padding: 2px; border-radius: 4px;">
                 <label><span class="clickable-label" onclick="showDesc('e_prime', event)" style="font-weight: bold; color: var(--primary);">中隔側 e' (Septal e') [cm/s]</span> <span class="val-display"><span id="e_prime_val">15.0</span></span></label>
                 <input type="range" id="e_prime" min="2.0" max="20.0" step="0.1" value="15.0" oninput="calculateReasoning()">
             </div>
@@ -148,15 +142,15 @@
                 <label><span class="clickable-label" onclick="showDesc('dct', event)">MV DecT (DcT) [ms]</span> <span class="val-display"><span id="dct_val">250</span></span></label>
                 <input type="range" id="dct" min="80" max="500" step="1" value="250" oninput="calculateReasoning()">
             </div>
-            <div class="input-group" style="background: #f7fafc; padding: 6px; border-radius: 4px; border: 1px solid #e2e8f0;">
+            <div class="input-group" style="background: #f7fafc; padding: 4px; border-radius: 4px; border: 1px solid #e2e8f0;">
                 <label><span style="color:#4a5568;">E/A 比 (自動計算)</span> <span class="val-display" style="background:#e2e8f0; color:#2d3748;"><span id="ea_val">1.20</span></span></label>
-                <label style="margin-top: 4px; margin-bottom: 0;"><span style="color:#4a5568;">算出 E/e' (自動計算)</span> <span class="val-display" style="background:#e2e8f0; color:#2d3748;"><span id="ee_val">5.3</span></span></label>
+                <label style="margin-top: 2px; margin-bottom: 0;"><span style="color:#4a5568;">算出 E/e' (自動計算)</span> <span class="val-display" style="background:#e2e8f0; color:#2d3748;"><span id="ee_val">5.3</span></span></label>
             </div>
             <div class="input-group">
                 <label><span class="clickable-label" onclick="showDesc('lavi', event)">LAVI [mL/m²]</span> <span class="val-display"><span id="lavi_val">24.0</span></span></label>
                 <input type="range" id="lavi" min="15" max="80" step="0.1" value="24.0" oninput="calculateReasoning()">
             </div>
-            <div class="input-group" style="background: #fff5f5; padding: 4px; border-radius: 4px;">
+            <div class="input-group" style="background: #fff5f5; padding: 2px; border-radius: 4px;">
                 <label><span class="clickable-label" onclick="showDesc('las', event)" style="font-weight: bold; color: #c53030;">左房リザーバ strain (LARS) [%]</span> <span class="val-display"><span id="lars_val">35</span></span></label>
                 <input type="range" id="lars" min="5" max="50" step="1" value="35" oninput="calculateReasoning()">
             </div>
@@ -170,7 +164,7 @@
                 <label><span class="clickable-label" onclick="showDesc('mpg', event)">mean PG [mmHg]</span> <span class="val-display"><span id="mpg_val">10</span></span></label>
                 <input type="range" id="mpg" min="5" max="150" step="1" value="10" oninput="calculateReasoning()">
             </div>
-            <div class="input-group" style="background: #fff5f5; padding: 6px; border-radius: 4px; border: 1px solid #fed7d7;">
+            <div class="input-group" style="background: #fff5f5; padding: 4px; border-radius: 4px; border: 1px solid #fed7d7;">
                 <label><span class="clickable-label" onclick="showDesc('mva', event)">MVA 連続式 [cm²]</span> <span class="val-display"><span id="mva_val">3.0</span></span></label>
                 <input type="range" id="mva" min="0.5" max="3.5" step="0.1" value="3.0" oninput="calculateReasoning()">
             </div>
@@ -180,11 +174,11 @@
             </div>
 
             <h3>下大静脈 (IVC)</h3>
-            <div class="input-group" style="background: #f7fafc; padding: 6px; border-radius: 4px; border: 1px solid #e2e8f0;">
+            <div class="input-group" style="background: #f7fafc; padding: 4px; border-radius: 4px; border: 1px solid #e2e8f0;">
                 <label><span>IVC 呼気径 [mm]</span> <span class="val-display"><span id="ivc_diam_val">15.0</span></span></label>
                 <input type="range" id="ivc_diam" min="5.0" max="30.0" step="0.1" value="15.0" oninput="calculateReasoning()">
             </div>
-            <div class="input-group" style="background: #f7fafc; padding: 6px; border-radius: 4px; border: 1px solid #e2e8f0;">
+            <div class="input-group" style="background: #f7fafc; padding: 4px; border-radius: 4px; border: 1px solid #e2e8f0;">
                 <label><span>IVC 呼吸性変動率 [%]</span> <span class="val-display"><span id="ivc_collapse_val">60</span></span></label>
                 <input type="range" id="ivc_collapse" min="0" max="100" step="1" value="60" oninput="calculateReasoning()">
             </div>
@@ -196,21 +190,21 @@
                 
                 <div class="lap-meter" style="background: #f8fafc; border-color: #cbd5e0;">
                     <div>
-                        <div style="font-size: 0.8rem; font-weight: bold; color: #4a5568;">【参考値】推定 平均肺動脈楔入圧 (PCWP)</div>
-                        <div style="font-size: 0.65rem; color: #718096;">1.24 × (E/e') + 1.9 (※評価ロジック非連動)</div>
+                        <div style="font-size: 0.75rem; font-weight: bold; color: #4a5568;">【参考値】推定 平均肺動脈楔入圧 (PCWP)</div>
+                        <div style="font-size: 0.6rem; color: #718096;">1.24 × (E/e') + 1.9 (※評価ロジック非連動)</div>
                     </div>
                     <div>
-                        <span class="lap-val" id="lap_pcwp" style="color: #4a5568;">11.8</span> <span style="font-size:0.75rem; color:#4a5568;">mmHg</span>
+                        <span class="lap-val" id="lap_pcwp" style="color: #4a5568; font-size: 1.1rem;">11.8</span> <span style="font-size:0.7rem; color:#4a5568;">mmHg</span>
                     </div>
                 </div>
 
                 <div class="lap-meter" style="background: #f0fff4; border: 1px solid #c6f6d5; margin-top: 4px;">
                     <div>
-                        <div style="font-size: 0.8rem; font-weight: bold; color: #22543d;">推定 右房圧 (RAP)</div>
-                        <div style="font-size: 0.65rem; color: #4a5568;">IVC径・虚脱率併合算定</div>
+                        <div style="font-size: 0.75rem; font-weight: bold; color: #22543d;">推定 右房圧 (RAP)</div>
+                        <div style="font-size: 0.6rem; color: #4a5568;">IVC径・虚脱率併合算定</div>
                     </div>
                     <div>
-                        <span class="lap-val" id="rap_calc" style="color: #22543d;">3</span> <span style="font-size:0.75rem; color:#22543d;">mmHg</span>
+                        <span class="lap-val" id="rap_calc" style="color: #22543d; font-size: 1.1rem;">3</span> <span style="font-size:0.7rem; color:#22543d;">mmHg</span>
                         <div id="rap_badge" class="status-badge bg-normal" style="margin:0; display:block; text-align:center;">正常</div>
                     </div>
                 </div>
@@ -219,12 +213,12 @@
                     🚨 注意: 僧帽弁狭窄（MS）のためE/e'による圧推定は適用外（参考値扱い）となります。
                 </div>
 
-                <hr style="border:0; border-top:1px solid var(--border); margin: 8px 0;">
+                <hr style="border:0; border-top:1px solid var(--border); margin: 6px 0;">
 
                 <div class="judgement-item">
                     <div>左室拡張機能分類:</div>
                     <span id="dd_badge" class="status-badge bg-normal">正常</span>
-                    <div id="dd_logic" style="width:100%; font-size:0.8rem; color:#4a5568;"></div>
+                    <div id="dd_logic" style="width:100%; font-size:0.75rem; color:#4a5568;"></div>
                 </div>
 
                 <div class="judgement-item">
@@ -232,12 +226,12 @@
                     <span id="hf_badge" class="status-badge bg-normal">正常心機能</span>
                 </div>
 
-                <div class="judgement-item" style="background:#f7fafc; padding:6px; border-radius:4px;">
+                <div class="judgement-item" style="background:#f7fafc; padding:4px; border-radius:4px;">
                     <div>AS 血行動態分類:</div>
                     <span id="as_badge" class="status-badge bg-normal">狭窄なし</span>
                 </div>
 
-                <div class="judgement-item" style="background:#fff5f5; padding:6px; border-radius:4px; margin-bottom:0; margin-top:6px;">
+                <div class="judgement-item" style="background:#fff5f5; padding:4px; border-radius:4px; margin-bottom:0; margin-top:4px;">
                     <div>MS 血行動態分類:</div>
                     <span id="ms_badge" class="status-badge bg-normal">狭窄なし</span>
                 </div>
@@ -252,9 +246,8 @@
             </div>
 
             <div class="result-box">
-                <h2>👨‍⚕️ 指導医の解説 (RAG)</h2>
+                <h2>🔍 学術的根拠（エビデンス）</h2>
                 <div class="note-box">
-                    <div class="note-title">📚 学術的根拠（エビデンス）</div>
                     <div id="edu_logic" class="note-content"></div>
                 </div>
             </div>
@@ -263,15 +256,13 @@
 
     <script>
         const parameterDescriptions = {
-            e_wave: "【E波】僧帽弁血流の拡張早期最大血流速度。心房細動時や左室充満圧の急激な変化を反映します。",
+            e_wave: "【E波】僧帽弁血流の拡張早期最大血流速度。左室充満圧の急激な変化を反映します。",
             a_wave: "【A波】心房収縮期流入速度。心房細動（Af）時は心房の有効収縮が消失するため『計測不可』となります。",
             e_prime: "【中隔側 e'】中隔側 e' ≦ 6.0 cm/s をもって『心筋弛緩能低下（Impaired Relaxation）』の存在を定義します。",
-            dct: "【MV DecT】E波減速時間。160ms未満への短縮は拘束型（Grade 3）への移行、およびコンプライアンスの著明低下を示します。",
+            dct: "【MV DecT】E波減速時間。160ms未満への短縮は拘束型（Grade 3）を示唆。",
             lavi: "【LAVI】左房容積指数。34 mL/m² 超を構造的リモデリングの指標とします。",
-            las: "【左房リザーバ strain (LARS)】改訂の最重要追加項目。LARS ≦ 18% を拡張機能障害・充満圧上昇の『機能的破綻指標』として採用。",
-            trv: "【TR Vmax】三尖弁逆流速度。拡張機能の有無（一次診断）からは除外され、LAP推定や包括的HFpEF重症度評価のステップに統合されました。",
-            ivc: "【IVC 呼気径】下大静脈径。右房圧（RAP）うっ血推定に使用。",
-            ivc_col: "【IVC 呼吸性変動率】吸気時の虚脱率。50%以上かつ21mm以下でRAP=3mmHgと判定。"
+            las: "【左房リザーバ strain (LARS)】改訂の最重要追加項目。LARS ≦ 18% を拡張機能障害の指標として採用。",
+            trv: "【TR Vmax】三尖弁逆流速度。2025年版基準では、LAP推定や包括的HFpEF重症度評価のステップに統合されました。"
         };
 
         function showDesc(key, event) {
@@ -280,7 +271,7 @@
             tooltip.innerHTML = parameterDescriptions[key] || "";
             tooltip.style.display = 'block';
             tooltip.style.left = event.clientX + 'px';
-            tooltip.style.top = (event.clientY + 15) + 'px';
+            tooltip.style.top = (event.clientY + 12) + 'px';
             document.addEventListener('click', hideDesc);
         }
 
@@ -313,7 +304,6 @@
                 
                 if (data.simpsonEF !== undefined) document.getElementById('lvef').value = Math.round(data.simpsonEF * 100);
                 else if (data.EF !== undefined) document.getElementById('lvef').value = Math.round(data.EF * 100);
-                
                 if (data["E波"] !== undefined) document.getElementById('e_wave').value = data["E波"];
                 
                 if (data["A波"] === undefined || data["A波"] === 0) {
@@ -327,8 +317,6 @@
                 }
                 
                 if (data["e'"] !== undefined) document.getElementById('e_prime').value = data["e'"];
-                else if (data["e'"] === undefined && data["e`"] !== undefined) document.getElementById('e_prime').value = data["e`"];
-                
                 if (data["MV DecT"] !== undefined) document.getElementById('dct').value = Math.round(data["MV DecT"]);
                 if (data["LAVI"] !== undefined) document.getElementById('lavi').value = data["LAVI"];
                 if (data["AVA連続式"] !== undefined) document.getElementById('ava').value = data["AVA連続式"];
@@ -345,7 +333,7 @@
                 }
                 
                 calculateReasoning();
-                alert("JSONデータを解析し、実測スライダーに連動させました！");
+                alert("JSONデータをパース反映しました！");
             } catch(e) {
                 alert("JSONのパースに失敗しました。\nエラー: " + e.message);
             }
@@ -356,8 +344,8 @@
             const lvef = parseFloat(document.getElementById('lvef').value) || 60;
             const e_wave = parseFloat(document.getElementById('e_wave').value) || 0.80;
             const a_wave = isAf ? 0 : (parseFloat(document.getElementById('a_wave').value) || 0.67);
-            const septal_e = parseFloat(document.getElementById('e_prime').value) || 15.0; // 変更検知対応
-            const dct = parseFloat(document.getElementById('dct').value) || 250; // 変更検知対応
+            const septal_e = parseFloat(document.getElementById('e_prime').value) || 15.0;
+            const dct = parseFloat(document.getElementById('dct').value) || 250;
             
             const lavi = parseFloat(document.getElementById('lavi').value) || 24.0;
             const lars = parseFloat(document.getElementById('lars').value) || 35; 
@@ -373,11 +361,11 @@
 
             document.getElementById('lvef_val').innerText = lvef;
             document.getElementById('e_wave_val').innerText = e_wave.toFixed(2);
-            document.getElementById('a_wave_val').innerText = isAf ? "計測不可(Af)" : a_wave.toFixed(2);
+            document.getElementById('a_wave_val').innerText = isAf ? "計測不可" : a_wave.toFixed(2);
             document.getElementById('e_prime_val').innerText = septal_e.toFixed(1);
             document.getElementById('dct_val').innerText = dct;
             
-            document.getElementById('ea_val').innerText = isAf ? "計測不可(Af)" : ea.toFixed(2);
+            document.getElementById('ea_val').innerText = isAf ? "計測不可" : ea.toFixed(2);
             document.getElementById('ee_val').innerText = ee.toFixed(1);
             
             document.getElementById('lavi_val').innerText = lavi.toFixed(1);
@@ -435,7 +423,7 @@
                         useLatestAseEvidence = true;
                         if (lars <= 18 || lavi > 34 || ee > 14) {
                             ddBadgeText = "Grade 2 (偽正常化)"; ddBadgeClass = "bg-warning";
-                            ddLogicText = "指標の総合評価（LARS ≦ 18%等による補正）: 左房圧は上昇。";
+                            ddLogicText = "LARS ≦ 18%等による総合補正: 左房圧は上昇。";
                             lapStatusText = "上昇";
                         } else {
                             ddBadgeText = "Grade 1 (弛緩能低下)"; ddBadgeClass = "bg-info";
@@ -481,7 +469,7 @@
             document.getElementById('ms_badge').className = "status-badge " + msClass;
             document.getElementById('ms_badge').innerText = msBadge;
 
-            if (isAf) finalTemplate += "心房細動（Af）リズム（A波欠失）です。\n";
+            if (isAf) finalTemplate += "心房細動（Af）リズムです。\n";
             if (lvef <= 40) {
                 finalTemplate += "左室壁運動はびまん性に高度低下しており（LVEF " + lvef + " %）、収縮不全（HFrEF）の所見です。\n";
             } else {
@@ -500,27 +488,25 @@
             document.getElementById('template_output').innerText = finalTemplate.trim();
             
             if (isAf) {
-                eduNotes.push("【心房細動下の拡張能評価】心房細動ではE/A比が破綻するため、<b>『日本心エコー図学会：心房細動における左室拡張機能評価ガイドライン（2023年）』</b>に準拠した特殊判定を行っています。");
+                eduNotes.push("【心房細動下の拡張能評価】<b>『日本心エコー図学会：心房細動における左室拡張機能評価ガイドライン（2023年）』</b>に準拠。");
             }
             if (lapStatusText.includes("上昇")) {
-                eduNotes.push("【左室充満圧の病態評価】E/A比、減速時間（DcT）、左房内圧が完全に連動。<b>『日本心エコー図学会：心不全における心エコー図検査の包括的活用ガイドライン（2025年改訂版）』</b>の基準に整合します。");
+                eduNotes.push("【左室充満圧の病態評価】<b>『日本心エコー図学会：心不全における心エコー図検査の包括的活用ガイドライン（2025年改訂版）』</b>の基準に整合。");
             }
             if (isMS) {
-                eduNotes.push("【弁膜症合併ピットフォール】MVA ≦ 2.0 cm² の僧帽弁狭窄症（MS）を合併。<b>『日本循環器学会：弁膜症治療ガイドライン（2020年改訂版）』</b>に明記されている通り、MS存在下では狭窄圧較差が加わるため、E/e'ベースの圧推定は適用外（参考値扱い）となります。");
+                eduNotes.push("【弁膜症合併ピットフォール】<b>『日本循環器学会：弁膜症治療ガイドライン（2020年改訂版）』</b>に基づき、MS合併時はE/e'ベースの圧推定は参考値扱い。");
             }
             if (ava <= 1.0 && mpg >= 40) {
-                eduNotes.push("【重症ASの判定】AVA ≦ 1.0 cm² かつ mean PG ≧ 40 mmHg は、<b>『ASE/EACVI：弁膜症狭窄重症度評価ガイドライン（2017年）』</b>における High-gradient 重症大動脈弁狭窄症の絶対的基準を満たします。");
+                eduNotes.push("【重症ASの判定】<b>『ASE/EACVI（2017年）』</b>における High-gradient 重症大動脈弁狭窄症基準。");
             }
-            
             if (useLatestAseEvidence || lars <= 18) {
                 eduNotes.push("<b style='color:var(--secondary);'>[引用エビデンス] 米国心エコー図学会（ASE）: Recommendations for the Evaluation of Left Ventricular Diastolic Function by Echocardiography and for Heart Failure With Preserved Ejection Fraction Diagnosis (2025年7月発表 最新アップデート)</b>");
             }
 
             if(eduNotes.length === 0) eduNotes.push("主要な血行動態パラメータは各学会ガイドラインの正常範囲内です。");
-            document.getElementById('edu_logic').innerHTML = "<ul><li style='margin-bottom:6px;'>" + eduNotes.join("</li><li style='margin-bottom:6px;'>") + "</li></ul>";
+            document.getElementById('edu_logic').innerHTML = "<ul><li style='margin-bottom:3px; list-style-type:none; padding-left:0;'>" + eduNotes.join("</li><li style='margin-bottom:3px; list-style-type:none; padding-left:0;'>") + "</li></ul>";
         }
 
-        // [仕様変更反映] リセット時および初期起動時のデフォルト値を中隔側e'=15.0、DcT=250へ再バインド
         function resetToNormalData() {
             document.getElementById('is_af').checked = false; 
             document.getElementById('a_wave').disabled = false; 
@@ -528,8 +514,8 @@
             document.getElementById('lvef').value = 60;
             document.getElementById('e_wave').value = 0.80;
             document.getElementById('a_wave').value = 0.67;
-            document.getElementById('e_prime').value = 15.0; // ご指定値: 15
-            document.getElementById('dct').value = 250;     // ご指定値: 250
+            document.getElementById('e_prime').value = 15.0; 
+            document.getElementById('dct').value = 250;     
             document.getElementById('lavi').value = 24.0;
             document.getElementById('lars').value = 35; 
             document.getElementById('ava').value = 2.00;
