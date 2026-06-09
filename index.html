@@ -46,6 +46,9 @@
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--secondary); cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
+        input[type="number"] {
+            border: 1px solid var(--border); border-radius: 3px; padding: 2px 4px; color: var(--text-main); font-size: 0.8rem; outline: none;
+        }
         
         .status-badge { display: inline-block; padding: 1px 6px; border-radius: 10px; font-weight: bold; color: white; font-size: 0.7rem; margin-bottom: 2px; }
         .bg-normal { background-color: #48bb78; } .bg-warning { background-color: #ed8936; } .bg-danger { background-color: #e53e3e; } .bg-info { background-color: #4299e1; }
@@ -123,6 +126,26 @@
                 </label>
             </div>
 
+            <h3>患者背景・詳細拡張能パラメータ</h3>
+            <div class="input-group">
+                <label style="justify-content: flex-start; gap: 10px;"><span>年齢 [歳]</span> <input type="number" id="age" value="65" oninput="calculateReasoning()" style="width: 60px;"></label>
+            </div>
+            <div class="input-group" style="display:flex; gap:10px;">
+                <label style="flex:1; justify-content: flex-start; gap: 10px;"><span>身長 [cm]</span> <input type="number" id="height" value="170" oninput="calculateReasoning()" style="width: 60px;"></label>
+                <label style="flex:1; justify-content: flex-start; gap: 10px;"><span>体重 [kg]</span> <input type="number" id="weight" value="65" oninput="calculateReasoning()" style="width: 60px;"></label>
+            </div>
+            <div class="input-group">
+                <label><span>IVRT [ms]</span> <span class="val-display"><span id="ivrt_val">100</span></span></label>
+                <input type="range" id="ivrt" min="50" max="150" step="1" value="100" oninput="calculateReasoning()">
+            </div>
+            <div class="input-group" style="background: #ebf8ff; padding: 2px; border-radius: 4px;">
+                <label><span style="font-weight: bold; color: #2b6cb0;">側壁側 e' (Lat e') [cm/s]</span> <span class="val-display"><span id="lat_e_val">12.0</span></span></label>
+                <input type="range" id="lat_e" min="2.0" max="25.0" step="0.1" value="12.0" oninput="calculateReasoning()">
+            </div>
+            <div class="input-group">
+                <label><span>PR end-diastolic vel [m/s]</span> <span class="val-display"><span id="pr_v_val">1.50</span></span></label>
+                <input type="range" id="pr_v" min="0.5" max="3.0" step="0.05" value="1.5" oninput="calculateReasoning()">
+            </div>
             <h3>左室・拡張機能パラメータ</h3>
             <div class="input-group">
                 <label><span>LVEF [%] (Simpson)</span> <span class="val-display"><span id="lvef_val">60</span></span></label>
@@ -199,7 +222,7 @@
                 <div class="lap-meter" style="background: #f8fafc; border-color: #cbd5e0;">
                     <div>
                         <div style="font-size: 0.75rem; font-weight: bold; color: #4a5568;">【参考値】推定 平均肺動脈楔入圧 (PCWP)</div>
-                        <div style="font-size: 0.6rem; color: #718096;">1.24 × (E/e') + 1.9 (※弁膜症がない場合の目安)</div>
+                        <div style="font-size: 0.6rem; color: #718096;">1.24 × (中隔側E/e') + 1.9</div>
                     </div>
                     <div>
                         <span class="lap-val" id="lap_pcwp" style="color: #4a5568; font-size: 1.1rem;">11.8</span> <span style="font-size:0.7rem; color:#4a5568;">mmHg</span>
@@ -363,6 +386,15 @@
         }
 
         function calculateReasoning() {
+            // ★追加パラメータ取得★
+            const age = parseFloat(document.getElementById('age').value) || 65;
+            const height = parseFloat(document.getElementById('height').value) || 170;
+            const weight = parseFloat(document.getElementById('weight').value) || 65;
+            const ivrt = parseFloat(document.getElementById('ivrt').value) || 100;
+            const lat_e = parseFloat(document.getElementById('lat_e').value) || 12.0;
+            const pr_v = parseFloat(document.getElementById('pr_v').value) || 1.5;
+
+            // 既存パラメータ取得
             const isAf = document.getElementById('is_af').checked;
             const lvef = parseFloat(document.getElementById('lvef').value) || 60;
             const gls = parseFloat(document.getElementById('gls').value) || 19.0;
@@ -383,7 +415,16 @@
             const ea = isAf ? 0 : (a_wave > 0 ? (e_wave / a_wave) : 1.0);
             const ee = septal_e > 0 ? ((e_wave * 100) / septal_e) : 5.3;
 
-            // UIテキストリアルタイム同期
+            // ★追加パラメータの計算★
+            const bsa = Math.sqrt((height * weight) / 3600);
+            const avg_e = (septal_e + lat_e) / 2;
+            const ee_avg = avg_e > 0 ? ((e_wave * 100) / avg_e) : 5.3;
+
+            // UIテキストリアルタイム同期 (追加分含む)
+            document.getElementById('ivrt_val').innerText = ivrt;
+            document.getElementById('lat_e_val').innerText = lat_e.toFixed(1);
+            document.getElementById('pr_v_val').innerText = pr_v.toFixed(2);
+
             document.getElementById('lvef_val').innerText = lvef;
             document.getElementById('gls_val').innerText = gls.toFixed(1);
             document.getElementById('e_wave_val').innerText = e_wave.toFixed(2);
@@ -406,7 +447,7 @@
             let ddBadgeText = "", ddBadgeClass = "", ddLogicText = "";
             let lapStatusText = "正常";
 
-            // 左室充満圧パターンおよび拡張機能分類
+            // 左室充満圧パターンおよび拡張機能分類 (既存ロジックを維持)
             if (isAf) {
                 if (ee >= 15 || dct < 160 || lavi > 34 || lars <= 18) {
                     if (dct < 160 || ee > 20) {
@@ -482,6 +523,9 @@
             document.getElementById('rap_badge').className = "status-badge " + rapBadgeClass;
             document.getElementById('rap_badge').innerText = rapStatusText;
 
+            // ★追加計算: RAP決定後の推定PADP算出★
+            const padp_est = (4 * Math.pow(pr_v, 2)) + rap;
+
             const isMS = (mva <= 2.0);
             document.getElementById('ms_lap_alert').style.display = isMS ? "block" : "none";
 
@@ -522,7 +566,6 @@
             // -------------------------------------------------------------
             let conflicts = [];
 
-            // 【追加】心アミロイドーシス等にみられる LVEF-GLS ミスマッチの自動検知
             if (lvef >= 55 && gls < 12.0) {
                 conflicts.push("<b>LVEF-GLS 高度ミスマッチ（心アミロイドーシス疑い）:</b> マクロの収縮能(LVEF " + lvef + "%)は保持されていますが、縦方向の心筋歪み指標(GLS " + gls.toFixed(1) + "%)が著明に低下しています。これは<b>心アミロイドーシス</b>などの浸潤性心筋症に特徴的な『Apical Sparing(心尖部運動保持、基部高度低下)』や計測ミスの可能性があります。臨床像（心電図低電位、壁肥厚、心不全症状）と併せて精査が必要です。");
             } else if (lvef >= 50 && gls < 15.0) {
@@ -567,7 +610,14 @@
             finalTemplate += la_status + "\n";
             
             if (trv > 2.8) finalTemplate += "三尖弁逆流速度は TR Vmax " + trv.toFixed(2) + " m/s と上昇しており、包括的な後負荷圧上昇（左室充満圧上昇病態を支持）を認めます。\n";
-            finalTemplate += "下大静脈は呼気径 " + ivc_diam.toFixed(1) + " mm、呼吸性変動率 " + ivc_collapse + "%、ASE2015基準に基づく推定右房圧（RAP）は " + rap + " mmHg です。";
+            finalTemplate += "下大静脈は呼気径 " + ivc_diam.toFixed(1) + " mm、呼吸性変動率 " + ivc_collapse + "%、ASE2015基準に基づく推定右房圧（RAP）は " + rap + " mmHg です。\n";
+
+            // ★追加：詳細評価パラメータの出力★
+            finalTemplate += "\n【追加・詳細評価パラメータ】\n";
+            finalTemplate += "・体表面積(BSA): " + bsa.toFixed(2) + " m²\n";
+            finalTemplate += "・平均e': " + avg_e.toFixed(1) + " cm/s、算出E/平均e': " + ee_avg.toFixed(1) + "\n";
+            finalTemplate += "・IVRT: " + ivrt + " ms " + (ivrt > 100 ? "（延長：弛緩障害の示唆）" : "（正常範囲内）") + "\n";
+            finalTemplate += "・推定肺動脈拡張期圧(PADP): " + padp_est.toFixed(1) + " mmHg （※RAP=" + rap + " mmHgとして算出）";
 
             document.getElementById('template_output').innerText = finalTemplate.trim();
             
@@ -587,6 +637,14 @@
             document.getElementById('a_wave').disabled = false; 
             savedAWaveValue = 0.67;
             
+            // ★追加パラメータのリセット★
+            document.getElementById('age').value = 65;
+            document.getElementById('height').value = 170;
+            document.getElementById('weight').value = 65;
+            document.getElementById('ivrt').value = 100;
+            document.getElementById('lat_e').value = 12.0;
+            document.getElementById('pr_v').value = 1.5;
+
             document.getElementById('lvef').value = 60;
             document.getElementById('gls').value = 19.0;
             document.getElementById('e_wave').value = 0.80;
