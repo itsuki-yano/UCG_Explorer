@@ -47,7 +47,7 @@
             -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--secondary); cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
         input[type="number"] {
-            border: 1px solid var(--border); border-radius: 3px; padding: 2px 4px; color: var(--text-main); font-size: 0.8rem; outline: none;
+            border: 1px solid var(--border); border-radius: 3px; padding: 2px 4px; color: var(--text-main); font-size: 0.8rem; outline: none; text-align: center;
         }
         
         .status-badge { display: inline-block; padding: 1px 6px; border-radius: 10px; font-weight: bold; color: white; font-size: 0.7rem; margin-bottom: 2px; }
@@ -104,7 +104,7 @@
 <body>
     <header>
         <h1>心エコー臨床推論エクスプローラー</h1>
-        <p>iPhone UI最適化・高密度レスポンシブ版（GLS/心アミロイドーシス対応）</p>
+        <p>ASE 2025準拠・高密度レスポンシブ版（年齢補正/LARS対応）</p>
     </header>
     
     <div id="tooltip" class="tooltip-box"></div>
@@ -126,26 +126,15 @@
                 </label>
             </div>
 
-            <h3>患者背景・詳細拡張能パラメータ</h3>
+            <h3>患者背景パラメータ</h3>
             <div class="input-group">
-                <label style="justify-content: flex-start; gap: 10px;"><span>年齢 [歳]</span> <input type="number" id="age" value="65" oninput="calculateReasoning()" style="width: 60px;"></label>
+                <label style="justify-content: flex-start; gap: 10px;"><span>年齢 [歳]</span> <input type="number" id="age" value="65" oninput="calculateReasoning()" style="width: 70px;"></label>
             </div>
             <div class="input-group" style="display:flex; gap:10px;">
-                <label style="flex:1; justify-content: flex-start; gap: 10px;"><span>身長 [cm]</span> <input type="number" id="height" value="170" oninput="calculateReasoning()" style="width: 60px;"></label>
-                <label style="flex:1; justify-content: flex-start; gap: 10px;"><span>体重 [kg]</span> <input type="number" id="weight" value="65" oninput="calculateReasoning()" style="width: 60px;"></label>
+                <label style="flex:1; justify-content: flex-start; gap: 10px;"><span>身長 [cm]</span> <input type="number" id="height" value="170" oninput="calculateReasoning()" style="width: 70px;"></label>
+                <label style="flex:1; justify-content: flex-start; gap: 10px;"><span>体重 [kg]</span> <input type="number" id="weight" value="65" oninput="calculateReasoning()" style="width: 70px;"></label>
             </div>
-            <div class="input-group">
-                <label><span>IVRT [ms]</span> <span class="val-display"><span id="ivrt_val">100</span></span></label>
-                <input type="range" id="ivrt" min="50" max="150" step="1" value="100" oninput="calculateReasoning()">
-            </div>
-            <div class="input-group" style="background: #ebf8ff; padding: 2px; border-radius: 4px;">
-                <label><span style="font-weight: bold; color: #2b6cb0;">側壁側 e' (Lat e') [cm/s]</span> <span class="val-display"><span id="lat_e_val">12.0</span></span></label>
-                <input type="range" id="lat_e" min="2.0" max="25.0" step="0.1" value="12.0" oninput="calculateReasoning()">
-            </div>
-            <div class="input-group">
-                <label><span>PR end-diastolic vel [m/s]</span> <span class="val-display"><span id="pr_v_val">1.50</span></span></label>
-                <input type="range" id="pr_v" min="0.5" max="3.0" step="0.05" value="1.5" oninput="calculateReasoning()">
-            </div>
+
             <h3>左室・拡張機能パラメータ</h3>
             <div class="input-group">
                 <label><span>LVEF [%] (Simpson)</span> <span class="val-display"><span id="lvef_val">60</span></span></label>
@@ -165,18 +154,29 @@
                 <label><span class="clickable-label" onclick="showDesc('a_wave', event)">A波 [m/s]</span> <span class="val-display"><span id="a_wave_val">0.67</span></span></label>
                 <input type="range" id="a_wave" min="0.00" max="2.00" step="0.01" value="0.67" oninput="calculateReasoning()">
             </div>
-            <div class="input-group" style="background: #ebf8ff; padding: 2px; border-radius: 4px;">
-                <label><span class="clickable-label" onclick="showDesc('e_prime', event)" style="font-weight: bold; color: #2b6cb0;">中隔側 e' (Septal e') [cm/s]</span> <span class="val-display"><span id="e_prime_val">15.0</span></span></label>
-                <input type="range" id="e_prime" min="2.0" max="20.0" step="0.1" value="15.0" oninput="calculateReasoning()">
-            </div>
             <div class="input-group">
                 <label><span class="clickable-label" onclick="showDesc('dct', event)">MV DecT (DcT) [ms]</span> <span class="val-display"><span id="dct_val">250</span></span></label>
                 <input type="range" id="dct" min="80" max="500" step="1" value="250" oninput="calculateReasoning()">
             </div>
+            <div class="input-group">
+                <label><span>IVRT [ms]</span> <span class="val-display"><span id="ivrt_val">100</span></span></label>
+                <input type="range" id="ivrt" min="50" max="150" step="1" value="100" oninput="calculateReasoning()">
+            </div>
+
+            <div class="input-group" style="background: #ebf8ff; padding: 2px; border-radius: 4px;">
+                <label><span class="clickable-label" onclick="showDesc('e_prime', event)" style="font-weight: bold; color: #2b6cb0;">中隔側 e' (Septal e') [cm/s]</span> <span class="val-display"><span id="e_prime_val">15.0</span></span></label>
+                <input type="range" id="e_prime" min="2.0" max="20.0" step="0.1" value="15.0" oninput="calculateReasoning()">
+            </div>
+            <div class="input-group" style="background: #ebf8ff; padding: 2px; border-radius: 4px;">
+                <label><span style="font-weight: bold; color: #2b6cb0;">側壁側 e' (Lat e') [cm/s]</span> <span class="val-display"><span id="lat_e_val">12.0</span></span></label>
+                <input type="range" id="lat_e" min="2.0" max="25.0" step="0.1" value="12.0" oninput="calculateReasoning()">
+            </div>
+
             <div class="input-group" style="background: #f7fafc; padding: 4px; border-radius: 4px; border: 1px solid #e2e8f0;">
                 <label><span style="color:#4a5568;">E/A 比 (自動計算)</span> <span class="val-display" style="background:#e2e8f0; color:#2d3748;"><span id="ea_val">1.20</span></span></label>
-                <label style="margin-top: 2px; margin-bottom: 0;"><span style="color:#4a5568;">算出 E/e' (自動計算)</span> <span class="val-display" style="background:#e2e8f0; color:#2d3748;"><span id="ee_val">5.3</span></span></label>
+                <label style="margin-top: 2px; margin-bottom: 0;"><span style="color:#4a5568;">算出 平均 E/e' (自動計算)</span> <span class="val-display" style="background:#e2e8f0; color:#2d3748;"><span id="ee_val">5.3</span></span></label>
             </div>
+            
             <div class="input-group">
                 <label><span class="clickable-label" onclick="showDesc('lavi', event)">LAVI [mL/m²]</span> <span class="val-display"><span id="lavi_val">24.0</span></span></label>
                 <input type="range" id="lavi" min="15" max="80" step="0.1" value="24.0" oninput="calculateReasoning()">
@@ -203,6 +203,10 @@
                 <label><span class="clickable-label" onclick="showDesc('trv', event)">TR Vmax [m/s]</span> <span class="val-display"><span id="trv_val">2.00</span></span></label>
                 <input type="range" id="trv" min="1.50" max="5.00" step="0.05" value="2.00" oninput="calculateReasoning()">
             </div>
+            <div class="input-group">
+                <label><span>PR end-diastolic vel [m/s]</span> <span class="val-display"><span id="pr_v_val">1.50</span></span></label>
+                <input type="range" id="pr_v" min="0.5" max="3.0" step="0.05" value="1.5" oninput="calculateReasoning()">
+            </div>
 
             <h3>下大静脈 (IVC)</h3>
             <div class="input-group" style="background: #f7fafc; padding: 4px; border-radius: 4px; border: 1px solid #e2e8f0;">
@@ -222,7 +226,7 @@
                 <div class="lap-meter" style="background: #f8fafc; border-color: #cbd5e0;">
                     <div>
                         <div style="font-size: 0.75rem; font-weight: bold; color: #4a5568;">【参考値】推定 平均肺動脈楔入圧 (PCWP)</div>
-                        <div style="font-size: 0.6rem; color: #718096;">1.24 × (中隔側E/e') + 1.9</div>
+                        <div style="font-size: 0.6rem; color: #718096;">1.24 × (平均 E/e') + 1.9</div>
                     </div>
                     <div>
                         <span class="lap-val" id="lap_pcwp" style="color: #4a5568; font-size: 1.1rem;">11.8</span> <span style="font-size:0.7rem; color:#4a5568;">mmHg</span>
@@ -300,7 +304,10 @@
             dct: "【MV DecT】E波減速時間。160ms未満への短縮は拘束型（Grade 3）を示唆。",
             lavi: "【LAVI】左房容積指数。34 mL/m² 超を構造的リモデリングの指標とします。",
             las: "【左房リザーバ strain (LARS)】心不全・拡張能評価の重要追加項目。LARS ≦ 18% を拡張機能障害の指標として評価。",
-            trv: "【TR Vmax】三尖弁逆流速度。2.8 m/s超は肺高血圧・左室充満圧上昇を示唆する包括指標です。"
+            trv: "【TR Vmax】三尖弁逆流速度。2.8 m/s超は肺高血圧・左室充満圧上昇を示唆する包括指標です。",
+            ava: "【AVA 連続式】大動脈弁口面積。1.0 cm²以下で重症AS。",
+            mpg: "【mean PG】平均圧較差。40 mmHg以上で重症AS。",
+            mva: "【MVA 連続式】僧帽弁口面積。1.5 cm²以下で重症MS。"
         };
 
         let savedAWaveValue = 0.67;
@@ -346,7 +353,6 @@
                 if (data.simpsonEF !== undefined) document.getElementById('lvef').value = Math.round(data.simpsonEF * 100);
                 else if (data.EF !== undefined) document.getElementById('lvef').value = Math.round(data.EF * 100);
                 
-                // GLSデータの取り込み対応
                 if (data.GLS !== undefined) document.getElementById('gls').value = Math.abs(data.GLS);
                 else if (data["左室GLS"] !== undefined) document.getElementById('gls').value = Math.abs(data["左室GLS"]);
 
@@ -386,7 +392,7 @@
         }
 
         function calculateReasoning() {
-            // ★追加パラメータ取得★
+            // パラメータ取得
             const age = parseFloat(document.getElementById('age').value) || 65;
             const height = parseFloat(document.getElementById('height').value) || 170;
             const weight = parseFloat(document.getElementById('weight').value) || 65;
@@ -394,7 +400,6 @@
             const lat_e = parseFloat(document.getElementById('lat_e').value) || 12.0;
             const pr_v = parseFloat(document.getElementById('pr_v').value) || 1.5;
 
-            // 既存パラメータ取得
             const isAf = document.getElementById('is_af').checked;
             const lvef = parseFloat(document.getElementById('lvef').value) || 60;
             const gls = parseFloat(document.getElementById('gls').value) || 19.0;
@@ -413,14 +418,12 @@
             const ivc_collapse = parseFloat(document.getElementById('ivc_collapse').value) || 60;
 
             const ea = isAf ? 0 : (a_wave > 0 ? (e_wave / a_wave) : 1.0);
-            const ee = septal_e > 0 ? ((e_wave * 100) / septal_e) : 5.3;
-
-            // ★追加パラメータの計算★
-            const bsa = Math.sqrt((height * weight) / 3600);
+            
+            // ASE 2025基準への適合: 平均 e' と 平均 E/e' をベースに計算
             const avg_e = (septal_e + lat_e) / 2;
             const ee_avg = avg_e > 0 ? ((e_wave * 100) / avg_e) : 5.3;
 
-            // UIテキストリアルタイム同期 (追加分含む)
+            // UIテキストリアルタイム同期
             document.getElementById('ivrt_val').innerText = ivrt;
             document.getElementById('lat_e_val').innerText = lat_e.toFixed(1);
             document.getElementById('pr_v_val').innerText = pr_v.toFixed(2);
@@ -432,7 +435,7 @@
             document.getElementById('e_prime_val').innerText = septal_e.toFixed(1);
             document.getElementById('dct_val').innerText = dct;
             document.getElementById('ea_val').innerText = isAf ? "計測不可" : ea.toFixed(2);
-            document.getElementById('ee_val').innerText = ee.toFixed(1);
+            document.getElementById('ee_val').innerText = ee_avg.toFixed(1);
             document.getElementById('lavi_val').innerText = lavi.toFixed(1);
             document.getElementById('lars_val').innerText = lars;
             document.getElementById('ava_val').innerText = ava.toFixed(2);
@@ -447,16 +450,16 @@
             let ddBadgeText = "", ddBadgeClass = "", ddLogicText = "";
             let lapStatusText = "正常";
 
-            // 左室充満圧パターンおよび拡張機能分類 (既存ロジックを維持)
+            // 左室充満圧パターンおよび拡張機能分類（ASE 2025: 平均 e' と 平均 E/e' を使用）
             if (isAf) {
-                if (ee >= 15 || dct < 160 || lavi > 34 || lars <= 18) {
-                    if (dct < 160 || ee > 20) {
+                if (ee_avg >= 15 || dct < 160 || lavi > 34 || lars <= 18) {
+                    if (dct < 160 || ee_avg > 20) {
                         ddBadgeText = "Grade 3 (拘束型充満)"; ddBadgeClass = "bg-danger";
-                        ddLogicText = "心房細動下: DcT高度短縮(<160ms)または高度E/e'上昇。左房圧は著明上昇。";
+                        ddLogicText = "心房細動下: DcT高度短縮(<160ms)または高度平均E/e'上昇。左房圧は著明上昇。";
                         lapStatusText = "著明に上昇";
                     } else {
                         ddBadgeText = "Grade 2 (偽正常化型充満)"; ddBadgeClass = "bg-warning";
-                        ddLogicText = "心房細動下: E/e'≧15、LARS低下などの複数陽性。左房圧は上昇傾向。";
+                        ddLogicText = "心房細動下: 平均E/e'≧15、LARS低下などの複数陽性。左房圧は上昇傾向。";
                         lapStatusText = "上昇";
                     }
                 } else {
@@ -478,19 +481,20 @@
                     ddLogicText = "E/A 0.8-2.0、DcT 160-200ms。左房圧は上昇パターン。";
                     lapStatusText = "上昇";
                 } else {
-                    if (septal_e > 6.0 && lavi <= 34 && lars > 18 && ee <= 14) {
+                    // 平均e' と 平均 E/e' を使ったマトリクス判定
+                    if (avg_e > 6.5 && lavi <= 34 && lars > 18 && ee_avg <= 14) {
                         ddBadgeText = "Normal (正常拡張能)"; ddBadgeClass = "bg-normal";
                         ddLogicText = "各拡張期指標はすべて正常範囲内。推定左房圧は正常。";
                         lapStatusText = "正常";
                     } else {
-                        if (lars <= 18 || lavi > 34 || ee > 14 || septal_e <= 6.0) {
-                            if (ee > 14 || (lavi > 34 && lars <= 18)) {
+                        if (lars <= 18 || lavi > 34 || ee_avg > 14 || avg_e <= 6.5) {
+                            if (ee_avg > 14 || (lavi > 34 && lars <= 18)) {
                                 ddBadgeText = "Grade 2 (偽正常化型)"; ddBadgeClass = "bg-warning";
-                                ddLogicText = "構造・歪み指標（LAVI/LARS）またはE/e'に基づく補正判定。左房圧上昇あり。";
+                                ddLogicText = "構造・歪み指標（LAVI/LARS）または平均E/e'に基づく補正判定。左房圧上昇あり。";
                                 lapStatusText = "上昇";
                             } else {
                                 ddBadgeText = "Grade 1 (弛緩能低下)"; ddBadgeClass = "bg-info";
-                                ddLogicText = "心筋弛緩能指標低下優位（中隔側e'≦6.0など）。左房圧は正常維持. ";
+                                ddLogicText = "心筋弛緩能指標低下優位（平均e'≦6.5など）。左房圧は正常維持.";
                                 lapStatusText = "正常";
                             }
                         } else {
@@ -507,7 +511,7 @@
             document.getElementById('dd_logic').innerText = ddLogicText;
 
             // PCWP線形推定
-            const lap_pcwp = (1.24 * ee) + 1.9;
+            const lap_pcwp = (1.24 * ee_avg) + 1.9;
             document.getElementById('lap_pcwp').innerText = lap_pcwp.toFixed(1);
 
             // RAP判定
@@ -523,7 +527,7 @@
             document.getElementById('rap_badge').className = "status-badge " + rapBadgeClass;
             document.getElementById('rap_badge').innerText = rapStatusText;
 
-            // ★追加計算: RAP決定後の推定PADP算出★
+            // RAP決定後の推定PADP算出
             const padp_est = (4 * Math.pow(pr_v, 2)) + rap;
 
             const isMS = (mva <= 2.0);
@@ -532,7 +536,7 @@
             let la_status = (lavi >= 34) ? "左房拡大（LAVI " + lavi.toFixed(1) + " mL/m²）を認めます。" : "左房サイズ（LAVI " + lavi.toFixed(1) + " mL/m²）は正常範囲内です。";
             if (lars <= 18) la_status += "左房リザーバstrain（LARS）は " + lars + "% と低下しており、左房機能不全を伴います。";
 
-            // 心機能パターン評価（GLSによる潜在的心不全病態支持ロジックの追加）
+            // 心機能パターン評価
             let hfBadge = ""; let hfClass = "";
             if (lvef <= 40) {
                 hfBadge = "HFrEFパターン (収縮高度低下)"; hfClass = "bg-danger";
@@ -562,12 +566,12 @@
             document.getElementById('ms_badge').innerText = msBadge;
 
             // -------------------------------------------------------------
-            // 計測不整合および【新機能】浸潤性心筋症（アミロイドーシス）検知エンジン
+            // 計測不整合アラート
             // -------------------------------------------------------------
             let conflicts = [];
 
             if (lvef >= 55 && gls < 12.0) {
-                conflicts.push("<b>LVEF-GLS 高度ミスマッチ（心アミロイドーシス疑い）:</b> マクロの収縮能(LVEF " + lvef + "%)は保持されていますが、縦方向の心筋歪み指標(GLS " + gls.toFixed(1) + "%)が著明に低下しています。これは<b>心アミロイドーシス</b>などの浸潤性心筋症に特徴的な『Apical Sparing(心尖部運動保持、基部高度低下)』や計測ミスの可能性があります。臨床像（心電図低電位、壁肥厚、心不全症状）と併せて精査が必要です。");
+                conflicts.push("<b>LVEF-GLS 高度ミスマッチ（心アミロイドーシス疑い）:</b> マクロの収縮能(LVEF " + lvef + "%)は保持されていますが、縦方向の心筋歪み指標(GLS " + gls.toFixed(1) + "%)が著明に低下しています。これは<b>心アミロイドーシス</b>などの浸潤性心筋症に特徴的な『Apical Sparing(心尖部運動保持、基部高度低下)』や計測ミスの可能性があります。");
             } else if (lvef >= 50 && gls < 15.0) {
                 conflicts.push("<b>潜在的左室収縮機能障害（Subclinical LVD）:</b> LVEFは正常範囲内ですが、GLSが15%未満に低下しており、微細な心筋収縮性低下が生じている可能性があります（HFpEFの補助診断支持指標）。");
             }
@@ -575,11 +579,11 @@
             if (ava <= 1.0 && mpg < 40) {
                 conflicts.push("<b>大動脈弁血行動態の解離:</b> 弁口面積(AVA ≦ 1.0)が重症な一方、圧較差(mean PG < 40)が中等度以下です。真の低流量低圧較差ASのほか、<b>「LVOT径の過小計測」</b>または角度偏差による速度過小評価を疑います。");
             }
-            if (!isAf && septal_e > 6.0 && (ea <= 0.8 && dct > 200)) {
-                conflicts.push("<b>弛緩能指標の不整合:</b> ドプラパターンは弛緩能低下(Grade 1)ですが、中隔側 e' は正常(>6.0)を示しています。<b>「組織ドプラサンプルの設置位置ミス（弁尖の巻き込み）」</b>を疑います。");
+            if (!isAf && avg_e > 6.5 && (ea <= 0.8 && dct > 200)) {
+                conflicts.push("<b>弛緩能指標の不整合:</b> ドプラパターンは弛緩能低下(Grade 1)ですが、平均 e' は正常(>6.5)を示しています。<b>「組織ドプラサンプルの設置位置ミス（弁尖の巻き込み）」</b>を疑います。");
             }
-            if (!isAf && (ea >= 0.8 && ea < 2.0) && (lavi > 34 || lars <= 18) && septal_e > 10.0 && ee < 8) {
-                conflicts.push("<b>左房構造・歪みの孤立解離:</b> 左室充満圧(E/e')は完全正常ですが、左房拡大やLARS低下を認めます。<b>「左房トレース時の肺静脈流入部の過誤誤侵入」</b>やROI設定不良を疑います。");
+            if (!isAf && (ea >= 0.8 && ea < 2.0) && (lavi > 34 || lars <= 18) && avg_e > 10.0 && ee_avg < 8) {
+                conflicts.push("<b>左房構造・歪みの孤立解離:</b> 左室充満圧(平均E/e')は完全正常ですが、左房拡大やLARS低下を認めます。<b>「左房トレース時の肺静脈流入部の過誤誤侵入」</b>やROI設定不良を疑います。");
             }
             if (lapStatusText.includes("著明") && rap === 3) {
                 conflicts.push("<b>左右うっ血圧の重大なミスマッチ:</b> 左室充満圧が高度拘束型であるのに対し、RAPが3 mmHgと完全正常です。<b>「下大静脈（IVC）断面の軸ズレによる径の過小計測」</b>を考慮してください。");
@@ -593,9 +597,29 @@
             } else {
                 alertZone.style.display = "none";
             }
-            // -------------------------------------------------------------
 
+            // -------------------------------------------------------------
+            // 年齢別 e' 正常下限値の評価 (NORRE study等の基準)
+            // -------------------------------------------------------------
+            let expected_septal = 0;
+            let expected_lateral = 0;
+            if (age >= 16 && age <= 20) { expected_septal = 12.1; expected_lateral = 14.9; }
+            else if (age >= 21 && age <= 40) { expected_septal = 10.2; expected_lateral = 12.2; }
+            else if (age >= 41 && age <= 60) { expected_septal = 7.4; expected_lateral = 9.2; }
+            else { expected_septal = 5.7; expected_lateral = 7.2; } // >60歳 またはデフォルト
+            
+            let age_note = "";
+            if (septal_e >= expected_septal && lat_e >= expected_lateral) {
+                age_note = `同年代の正常下限値（中隔≧${expected_septal}, 側壁≧${expected_lateral}）を満たしており、加齢相応の正常な心筋弛緩能が保たれています。`;
+            } else {
+                age_note = `同年代の正常下限値（中隔≧${expected_septal}, 側壁≧${expected_lateral}）を下回っており、単なる加齢変化以上の心筋弛緩能低下が示唆されます。`;
+            }
+
+            // -------------------------------------------------------------
             // 統合テンプレート文字列の構築
+            // -------------------------------------------------------------
+            let bsa_str = isNaN(bsa) ? "入力なし" : bsa.toFixed(2);
+            
             if (isAf) finalTemplate += "心房細動（Af）リズムです。\n";
             if (lvef <= 40) {
                 finalTemplate += "左室壁運動はびまん性に高度低下（LVEF " + lvef + "%）を認め、高度収縮不全パターンを呈しています。\n";
@@ -604,30 +628,30 @@
             }
             
             let msLapWarningText = isMS ? "（※注意: 狭窄弁による交絡のため参考値）" : "";
-            finalTemplate += "拡張期血行動態パラメータは、E/A比: " + (isAf ? "計測不可" : ea.toFixed(2)) + "、中隔側e': " + septal_e.toFixed(1) + " cm/s、算出E/e': " + ee.toFixed(1) + "、DcT: " + dct + " ms、LARS: " + lars + "% です。\n";
+            finalTemplate += "拡張期血行動態パラメータは、E/A比: " + (isAf ? "計測不可" : ea.toFixed(2)) + "、平均e': " + avg_e.toFixed(1) + " cm/s、算出 平均E/e': " + ee_avg.toFixed(1) + "、DcT: " + dct + " ms、LARS: " + lars + "% です。\n";
             finalTemplate += " ・マトリクス判定に基づく推定左房圧（LAP動態）は ＝ 「" + lapStatusText + "」の推移を示します " + msLapWarningText + "\n";
             finalTemplate += "左室拡張機能評価分類は「" + ddBadgeText + "」に相当します。\n";
+            finalTemplate += "【年齢補正】e'指標は" + age_note + "\n";
             finalTemplate += la_status + "\n";
             
             if (trv > 2.8) finalTemplate += "三尖弁逆流速度は TR Vmax " + trv.toFixed(2) + " m/s と上昇しており、包括的な後負荷圧上昇（左室充満圧上昇病態を支持）を認めます。\n";
             finalTemplate += "下大静脈は呼気径 " + ivc_diam.toFixed(1) + " mm、呼吸性変動率 " + ivc_collapse + "%、ASE2015基準に基づく推定右房圧（RAP）は " + rap + " mmHg です。\n";
 
-            // ★追加：詳細評価パラメータの出力★
-            finalTemplate += "\n【追加・詳細評価パラメータ】\n";
-            finalTemplate += "・体表面積(BSA): " + bsa.toFixed(2) + " m²\n";
-            finalTemplate += "・平均e': " + avg_e.toFixed(1) + " cm/s、算出E/平均e': " + ee_avg.toFixed(1) + "\n";
+            // 詳細評価パラメータの出力
+            finalTemplate += "\n【詳細評価パラメータ】\n";
+            finalTemplate += "・体表面積(BSA): " + bsa_str + " m²\n";
             finalTemplate += "・IVRT: " + ivrt + " ms " + (ivrt > 100 ? "（延長：弛緩障害の示唆）" : "（正常範囲内）") + "\n";
             finalTemplate += "・推定肺動脈拡張期圧(PADP): " + padp_est.toFixed(1) + " mmHg （※RAP=" + rap + " mmHgとして算出）";
 
             document.getElementById('template_output').innerText = finalTemplate.trim();
             
             // 学術的根拠エビデンス構築
-            if (isAf) eduNotes.push("【心房細動下の拡張能】<b>『JSE 心房細動における左室拡張機能評価ガイドライン』</b>（E/e'≧15基準）。");
+            if (isAf) eduNotes.push("【心房細動下の拡張能】<b>『JSE 心房細動における左室拡張機能評価ガイドライン』</b>。");
             if (lapStatusText.includes("上昇")) eduNotes.push("【充満圧の包括評価】<b>『日本心エコー図学会：心不全包括的活用ガイドライン』</b>に整合。");
             if (lvef >= 55 && gls < 12.0) eduNotes.push("【浸潤性心筋症評価】<b>『日本循環器学会：心アミロイドーシス診療ガイドライン（2020年改訂版）』</b>にみるLVEF保持下の微細収縮機能障害（GLS低下）およびApical Sparing概念を反映。");
             if (isMS) eduNotes.push("【弁膜症交絡】<b>『JCS 弁膜症治療ガイドライン』</b>に基づき、MS合併時のE/e'は機能不全交絡のため適用外扱い。");
-            if (lars <= 18) eduNotes.push("【左房歪み解析】最新の国際ステートメントに準拠し、LARS≦18%を拡張障害補正の補助指標として適応。");
-            eduNotes.push("【拡張能・右心基準】<b>『ASE/EACVI 2025 左室拡張機能評価』および『ASE 2025 右心系評価勧告』</b>に準拠。");
+            eduNotes.push("【拡張能・右心基準】<b>『ASE/EACVI 2025 左室拡張機能評価アルゴリズム』</b>に完全準拠（中隔単独から「平均 e'」および「平均 E/e'」を主軸とした評価へ移行、ならびに LARS≦18% の統合評価）。");
+            eduNotes.push("【年齢別 e' 補正】<b>『NORRE study』</b>に基づく健常者の年齢層別 e' 下限値（16-20歳, 21-40歳, 41-60歳, >60歳）を用いた加齢変化の鑑別ロジック。");
 
             document.getElementById('edu_logic').innerHTML = "<ul><li style='margin-bottom:3px; list-style-type:none; padding-left:0;'>" + eduNotes.join("</li><li style='margin-bottom:3px; list-style-type:none; padding-left:0;'>") + "</li></ul>";
         }
@@ -637,7 +661,6 @@
             document.getElementById('a_wave').disabled = false; 
             savedAWaveValue = 0.67;
             
-            // ★追加パラメータのリセット★
             document.getElementById('age').value = 65;
             document.getElementById('height').value = 170;
             document.getElementById('weight').value = 65;
